@@ -1,0 +1,1961 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STELLAR WORDS — 星际词典</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#0d0115;overflow:hidden;font-family:'Orbitron','Courier New',monospace;color:#f0e0ff;user-select:none;}
+canvas{position:fixed;top:0;left:0;z-index:1;}
+#SL{position:fixed;top:0;left:0;width:100%;height:100%;z-index:2;pointer-events:none;
+  background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(180,80,255,0.018) 3px,rgba(180,80,255,0.018) 4px);}
+.screen{position:fixed;top:0;left:0;width:100%;height:100%;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.hidden{display:none!important;}
+
+/* ── BUTTONS ── */
+.btn{
+  background:linear-gradient(135deg,rgba(140,40,255,0.18),rgba(255,50,130,0.12));
+  border:1px solid rgba(255,50,130,0.55);color:#ff3082;
+  padding:12px 32px;font-family:'Orbitron','Courier New',monospace;font-size:14px;letter-spacing:3px;
+  cursor:pointer;transition:all 0.25s;text-transform:uppercase;position:relative;overflow:hidden;
+}
+.btn::after{content:'';position:absolute;top:0;left:-110%;width:60%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,50,130,0.2),transparent);
+  transition:left 0.5s;transform:skewX(-15deg);}
+.btn:hover::after{left:150%;}
+.btn:hover{border-color:#ff3082;color:#ff80b0;
+  box-shadow:0 0 25px rgba(255,50,130,0.5),0 0 60px rgba(255,50,130,0.15),inset 0 0 15px rgba(255,50,130,0.08);}
+.btn:active{transform:scale(0.97);}
+.btn-purple{background:linear-gradient(135deg,rgba(140,40,255,0.18),rgba(180,80,255,0.1));border-color:rgba(180,80,255,0.55);color:#c060ff;}
+.btn-purple:hover{border-color:#c060ff;color:#e090ff;box-shadow:0 0 25px rgba(180,80,255,0.5),0 0 60px rgba(180,80,255,0.15);}
+.btn-green{background:linear-gradient(135deg,rgba(0,220,180,0.12),rgba(0,255,140,0.08));border-color:rgba(0,220,180,0.55);color:#00dcc0;}
+.btn-green:hover{border-color:#00dcc0;color:#60ffe8;box-shadow:0 0 25px rgba(0,220,180,0.5),0 0 60px rgba(0,220,180,0.15);}
+.btn-red{background:rgba(255,60,60,0.1);border-color:rgba(255,80,80,0.55);color:#ff5050;}
+.btn-red:hover{border-color:#ff5050;color:#ff9090;box-shadow:0 0 25px rgba(255,80,80,0.5);}
+.btn-gold{background:linear-gradient(135deg,rgba(255,200,0,0.12),rgba(255,140,0,0.08));border-color:rgba(255,200,0,0.55);color:#ffc800;}
+.btn-gold:hover{border-color:#ffc800;color:#ffe060;box-shadow:0 0 25px rgba(255,200,0,0.5),0 0 60px rgba(255,200,0,0.15);}
+
+/* ── TITLE ── */
+#scr-title{
+  background:
+    radial-gradient(ellipse 90% 70% at 50% 45%,rgba(120,30,220,0.4) 0%,transparent 65%),
+    radial-gradient(ellipse 50% 40% at 20% 75%,rgba(255,50,130,0.22) 0%,transparent 55%),
+    radial-gradient(ellipse 50% 40% at 80% 20%,rgba(0,180,255,0.18) 0%,transparent 55%),
+    radial-gradient(ellipse 40% 30% at 60% 85%,rgba(0,220,180,0.14) 0%,transparent 50%),
+    linear-gradient(180deg,#0d0115 0%,#180430 45%,#0d0115 100%);
+}
+.title-logo{margin-bottom:12px;position:relative;}
+.title-main{
+  font-size:clamp(34px,6vw,76px);font-weight:900;letter-spacing:10px;
+  background:linear-gradient(135deg,#ff3082 0%,#c060ff 40%,#00dcc0 80%,#ffc800 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  filter:drop-shadow(0 0 25px rgba(255,50,130,0.7)) drop-shadow(0 0 50px rgba(180,80,255,0.4));
+  animation:titlePulse 3s ease-in-out infinite;line-height:1.1;
+}
+.title-line{width:80%;max-width:400px;height:1px;
+  background:linear-gradient(90deg,transparent,#ff3082,#c060ff,#00dcc0,transparent);
+  margin:10px auto;opacity:0.7;}
+.title-sub{font-size:clamp(13px,2vw,20px);letter-spacing:8px;color:#c060ff;
+  text-shadow:0 0 12px rgba(192,96,255,0.8),0 0 30px rgba(192,96,255,0.4);margin-bottom:44px;}
+.title-hi{font-size:13px;letter-spacing:3px;color:#ffc800;
+  text-shadow:0 0 10px rgba(255,200,0,0.6);margin-bottom:36px;
+  padding:8px 24px;border:1px solid rgba(255,200,0,0.25);background:rgba(255,200,0,0.05);}
+.title-btns{display:flex;gap:20px;flex-wrap:wrap;justify-content:center;}
+@keyframes titlePulse{
+  0%,100%{filter:drop-shadow(0 0 25px rgba(255,50,130,0.7)) drop-shadow(0 0 50px rgba(180,80,255,0.4));}
+  50%{filter:drop-shadow(0 0 40px rgba(255,50,130,1)) drop-shadow(0 0 80px rgba(180,80,255,0.7)) drop-shadow(0 0 120px rgba(0,220,180,0.3));}
+}
+/* floating orbs decoration */
+.title-orb{position:absolute;border-radius:50%;pointer-events:none;animation:orbFloat 6s ease-in-out infinite;}
+@keyframes orbFloat{0%,100%{transform:translateY(0) scale(1);}50%{transform:translateY(-18px) scale(1.05);}}
+
+/* ── SETTINGS ── */
+#scr-settings{overflow-y:auto;
+  background:radial-gradient(ellipse at 50% 0%,rgba(120,30,220,0.25) 0%,transparent 55%),rgba(13,1,21,0.97);}
+.settings-box{
+  background:linear-gradient(160deg,rgba(32,8,64,0.97),rgba(20,4,44,0.99));
+  border:1px solid rgba(180,80,255,0.35);padding:40px;max-width:600px;width:90%;
+  box-shadow:0 0 60px rgba(120,30,220,0.35),0 0 120px rgba(255,50,130,0.1),inset 0 0 40px rgba(120,30,220,0.06);
+  position:relative;
+}
+.settings-box::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,#c060ff 20%,#ff3082 50%,#c060ff 80%,transparent);}
+.settings-box::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(0,220,180,0.4),transparent);}
+.settings-title{font-size:20px;font-weight:700;letter-spacing:6px;
+  background:linear-gradient(90deg,#c060ff,#ff3082,#ffc800);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  text-align:center;margin-bottom:32px;
+  filter:drop-shadow(0 0 8px rgba(255,50,130,0.5));}
+.setting-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;
+  border-bottom:1px solid rgba(180,80,255,0.1);}
+.setting-label{font-size:13px;letter-spacing:2px;color:#d4b0ff;}
+.toggle{position:relative;width:52px;height:26px;cursor:pointer;display:inline-block;}
+.toggle input{opacity:0;width:0;height:0;position:absolute;}
+.toggle-track{position:absolute;top:0;left:0;right:0;bottom:0;
+  background:rgba(180,80,255,0.1);border:1px solid rgba(180,80,255,0.4);border-radius:13px;transition:0.3s;cursor:pointer;}
+.toggle input:checked + .toggle-track{background:rgba(255,50,130,0.28);border-color:rgba(255,50,130,0.7);}
+.toggle-thumb{position:absolute;top:3px;left:3px;width:18px;height:18px;
+  background:linear-gradient(135deg,#c060ff,#ff3082);border-radius:50%;transition:0.3s;
+  box-shadow:0 0 10px rgba(192,96,255,0.9);pointer-events:none;}
+.toggle input:checked ~ .toggle-thumb{transform:translateX(26px);box-shadow:0 0 10px rgba(255,50,130,0.9);}
+.radio-group{display:flex;gap:8px;flex-wrap:wrap;}
+.radio-btn{background:rgba(120,30,220,0.08);border:1px solid rgba(180,80,255,0.3);
+  color:rgba(180,80,255,0.6);padding:6px 12px;font-family:'Orbitron','Courier New',monospace;
+  font-size:10px;letter-spacing:1px;cursor:pointer;transition:all 0.2s;}
+.radio-btn.active{border-color:#c060ff;color:#f0c0ff;background:rgba(180,80,255,0.2);
+  box-shadow:0 0 12px rgba(180,80,255,0.35);}
+.radio-btn:hover:not(.active){border-color:rgba(180,80,255,0.5);color:rgba(200,100,255,0.9);}
+.color-dots{display:flex;gap:10px;}
+.color-dot{width:30px;height:30px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:all 0.25s;}
+.color-dot.active{border-color:#fff;box-shadow:0 0 16px currentColor,0 0 32px currentColor;transform:scale(1.28);}
+input[type=range]{-webkit-appearance:none;appearance:none;width:120px;height:4px;
+  background:rgba(180,80,255,0.2);border-radius:2px;outline:none;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:16px;height:16px;
+  background:linear-gradient(135deg,#c060ff,#ff3082);border-radius:50%;cursor:pointer;
+  box-shadow:0 0 10px rgba(192,96,255,0.9);}
+.settings-btns{display:flex;gap:16px;justify-content:center;margin-top:28px;flex-wrap:wrap;}
+
+/* ── HUD ── */
+#hud{position:fixed;top:0;left:0;width:100%;z-index:20;pointer-events:none;}
+#hud-bar{display:flex;align-items:center;justify-content:space-between;padding:10px 20px;
+  background:linear-gradient(90deg,rgba(28,6,56,0.88),rgba(20,4,48,0.92),rgba(28,6,56,0.88));
+  border-bottom:1px solid rgba(180,80,255,0.25);backdrop-filter:blur(10px);
+  box-shadow:0 2px 40px rgba(120,30,220,0.25),0 1px 0 rgba(255,50,130,0.15);}
+#hud-left,#hud-center,#hud-right{display:flex;align-items:center;gap:16px;}
+.hud-item{font-size:11px;letter-spacing:2px;}
+.hud-label{color:rgba(180,80,255,0.5);font-size:9px;letter-spacing:2px;font-family:'Orbitron',monospace;}
+.hud-val{color:#f0c0ff;font-size:15px;font-weight:700;text-shadow:0 0 10px rgba(180,80,255,0.8);}
+.shields{display:flex;gap:5px;}
+.heart{color:#ff3082;font-size:18px;text-shadow:0 0 10px #ff3082,0 0 20px rgba(255,48,130,0.5);transition:all 0.3s;}
+.heart.empty{color:rgba(255,48,130,0.14);text-shadow:none;}
+#powerup-bar{display:flex;gap:8px;padding:5px 20px;justify-content:center;min-height:30px;}
+.pu-pill{display:flex;align-items:center;gap:6px;
+  background:linear-gradient(135deg,rgba(28,6,56,0.92),rgba(20,4,48,0.96));
+  border:1px solid;padding:3px 10px;font-size:10px;letter-spacing:1px;border-radius:14px;
+  box-shadow:0 0 12px rgba(0,0,0,0.5);}
+.hud-btn{pointer-events:all;
+  background:linear-gradient(135deg,rgba(180,80,255,0.12),rgba(255,50,130,0.06));
+  border:1px solid rgba(180,80,255,0.38);color:rgba(200,120,255,0.85);
+  padding:5px 14px;font-family:'Orbitron','Courier New',monospace;font-size:10px;letter-spacing:2px;
+  cursor:pointer;transition:all 0.2s;text-transform:uppercase;}
+.hud-btn:hover{border-color:#c060ff;color:#f0c0ff;background:rgba(180,80,255,0.22);
+  box-shadow:0 0 18px rgba(180,80,255,0.45);}
+
+/* ── LIBRARY ── */
+#lib-overlay{position:fixed;top:0;left:0;width:100%;height:100%;z-index:30;
+  background:linear-gradient(160deg,rgba(22,5,50,0.99),rgba(13,1,28,1));
+  display:flex;flex-direction:column;padding:20px;}
+.lib-header{display:flex;align-items:center;gap:16px;margin-bottom:16px;
+  padding-bottom:14px;border-bottom:1px solid rgba(255,50,130,0.28);flex-wrap:wrap;}
+.lib-title{font-size:18px;font-weight:700;letter-spacing:4px;
+  background:linear-gradient(90deg,#ff3082,#c060ff,#00dcc0);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  filter:drop-shadow(0 0 10px rgba(255,50,130,0.6));}
+.lib-count{font-size:12px;letter-spacing:2px;color:#ffc800;text-shadow:0 0 8px rgba(255,200,0,0.5);}
+#lib-search{background:rgba(180,80,255,0.07);border:1px solid rgba(180,80,255,0.32);
+  color:#f0c0ff;padding:8px 16px;font-family:'Orbitron','Courier New',monospace;font-size:12px;
+  letter-spacing:1px;outline:none;flex:1;min-width:200px;transition:border-color 0.2s;}
+#lib-search:focus{border-color:#c060ff;box-shadow:0 0 18px rgba(180,80,255,0.3);}
+#lib-search::placeholder{color:rgba(180,80,255,0.32);}
+#lib-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px;overflow-y:auto;flex:1;padding-right:8px;}
+#lib-grid::-webkit-scrollbar{width:4px;}
+#lib-grid::-webkit-scrollbar-track{background:rgba(180,80,255,0.05);}
+#lib-grid::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#c060ff,#ff3082);border-radius:2px;}
+.word-card{background:linear-gradient(145deg,rgba(32,8,66,0.92),rgba(22,5,48,0.96));
+  border:1px solid rgba(180,80,255,0.18);padding:14px;transition:all 0.25s;position:relative;overflow:hidden;}
+.word-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:transparent;transition:background 0.3s;}
+.word-card.collected::before{background:linear-gradient(90deg,#ff3082,#c060ff,#00dcc0);}
+.word-card.collected{border-color:rgba(180,80,255,0.42);}
+.word-card:hover{transform:translateY(-3px);box-shadow:0 6px 24px rgba(180,80,255,0.28);border-color:rgba(255,50,130,0.38);}
+.word-card.locked{opacity:0.25;}
+.wc-en{font-size:15px;font-weight:700;color:#ff3082;letter-spacing:2px;margin-bottom:4px;text-shadow:0 0 8px rgba(255,50,130,0.5);}
+.wc-ph{font-size:10px;color:rgba(180,80,255,0.6);letter-spacing:1px;margin-bottom:6px;}
+.wc-cn{font-size:13px;color:#c060ff;letter-spacing:1px;margin-bottom:10px;}
+.wc-speak{background:linear-gradient(135deg,rgba(0,220,180,0.1),rgba(0,180,255,0.05));
+  border:1px solid rgba(0,220,180,0.32);color:rgba(0,220,180,0.7);
+  padding:4px 10px;font-family:monospace;font-size:11px;cursor:pointer;transition:all 0.2s;letter-spacing:1px;}
+.word-card.collected .wc-speak:hover{border-color:#00dcc0;color:#00dcc0;
+  background:rgba(0,220,180,0.15);box-shadow:0 0 12px rgba(0,220,180,0.35);}
+
+/* ── PAUSE ── */
+#scr-pause{background:radial-gradient(ellipse at 50% 40%,rgba(255,200,0,0.14) 0%,transparent 55%),rgba(13,1,21,0.95);}
+.pause-title{font-size:38px;font-weight:900;letter-spacing:10px;
+  background:linear-gradient(90deg,#ffc800,#ff8c00,#ff3082);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  filter:drop-shadow(0 0 22px rgba(255,200,0,0.7));margin-bottom:40px;}
+.pause-btns{display:flex;flex-direction:column;gap:16px;align-items:center;}
+
+/* ── GAME OVER ── */
+#scr-gameover{background:
+  radial-gradient(ellipse at 50% 30%,rgba(255,50,130,0.2) 0%,transparent 55%),
+  radial-gradient(ellipse at 50% 80%,rgba(120,30,220,0.18) 0%,transparent 50%),
+  rgba(13,1,21,0.96);}
+.go-title{font-size:clamp(28px,5vw,62px);font-weight:900;letter-spacing:10px;
+  background:linear-gradient(90deg,#ff3082,#ff8c00,#ffc800,#ff3082);
+  background-size:300% 100%;
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  filter:drop-shadow(0 0 20px rgba(255,50,130,0.8));
+  margin-bottom:32px;animation:goPulse 1s ease-in-out infinite,goShift 2.5s linear infinite;}
+@keyframes goPulse{0%,100%{filter:drop-shadow(0 0 20px rgba(255,50,130,0.8));}50%{filter:drop-shadow(0 0 40px rgba(255,50,130,1));}}
+@keyframes goShift{0%{background-position:0% 50%;}100%{background-position:300% 50%;}}
+.go-stats{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:32px;max-width:420px;width:90%;}
+.go-stat{background:linear-gradient(145deg,rgba(32,8,66,0.92),rgba(22,5,48,0.96));
+  border:1px solid rgba(180,80,255,0.22);padding:16px;text-align:center;position:relative;}
+.go-stat::after{content:'';position:absolute;bottom:0;left:20%;right:20%;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,50,130,0.5),transparent);}
+.go-stat-label{font-size:10px;letter-spacing:2px;color:rgba(180,80,255,0.55);margin-bottom:6px;}
+.go-stat-val{font-size:22px;font-weight:700;color:#f0c0ff;text-shadow:0 0 10px rgba(180,80,255,0.6);}
+.go-stat-val.gold{color:#ffc800;text-shadow:0 0 10px rgba(255,200,0,0.7);}
+.go-btns{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;}
+#hi-badge{font-size:13px;letter-spacing:3px;
+  background:linear-gradient(90deg,#ffc800,#ff8c00);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  filter:drop-shadow(0 0 8px rgba(255,200,0,0.7));margin-bottom:20px;animation:goPulse 0.8s ease-in-out infinite;}
+
+/* ── WAVE BANNER ── */
+#wave-banner{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:25;text-align:center;pointer-events:none;opacity:0;transition:opacity 0.5s;}
+.wave-banner-num{font-size:clamp(36px,8vw,84px);font-weight:900;letter-spacing:12px;
+  background:linear-gradient(135deg,#00dcc0,#c060ff,#ff3082);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  filter:drop-shadow(0 0 25px rgba(0,220,180,0.7)) drop-shadow(0 0 50px rgba(180,80,255,0.4));}
+.wave-banner-sub{font-size:15px;letter-spacing:6px;color:#ffc800;margin-top:8px;
+  text-shadow:0 0 12px rgba(255,200,0,0.8);}
+
+/* ── FLOAT TEXT ── */
+.float-text{position:fixed;z-index:23;pointer-events:none;font-family:'Orbitron',monospace;
+  font-size:13px;letter-spacing:2px;font-weight:700;
+  animation:floatUp 1.6s ease-out forwards;}
+@keyframes floatUp{
+  0%{opacity:1;transform:translateX(-50%) translateY(0) scale(1);}
+  40%{opacity:1;transform:translateX(-50%) translateY(-36px) scale(1.12);}
+  100%{opacity:0;transform:translateX(-50%) translateY(-80px) scale(0.88);}
+}
+
+/* ── RIGHT DOCK ── */
+#right-dock{position:fixed;right:20px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:12px;z-index:25;}
+.dock-item{position:relative;}
+.dock-btn{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;
+  background:linear-gradient(135deg,rgba(140,40,255,0.2),rgba(255,50,130,0.1));
+  border:1.5px solid rgba(180,80,255,0.42);transition:all 0.22s;
+  box-shadow:0 0 14px rgba(120,30,220,0.22);user-select:none;}
+.dock-btn:hover{border-color:#c060ff;background:rgba(180,80,255,0.28);
+  box-shadow:0 0 26px rgba(180,80,255,0.65),0 0 50px rgba(180,80,255,0.2);transform:scale(1.1);}
+.dock-popup{position:absolute;right:calc(100% + 14px);top:50%;transform:translateY(-50%);
+  visibility:hidden;opacity:0;transition:opacity 0.18s,visibility 0.18s;pointer-events:none;}
+.dock-item:hover .dock-popup{visibility:visible;opacity:1;pointer-events:all;}
+/* dict popup */
+#dp-dict{width:clamp(300px,520px,calc(100vw - 120px));max-height:74vh;
+  background:linear-gradient(160deg,rgba(22,5,50,0.98),rgba(13,1,28,0.99));
+  border:1px solid rgba(180,80,255,0.42);box-shadow:0 0 50px rgba(120,30,220,0.5);
+  display:flex;flex-direction:column;position:relative;}
+#dp-dict::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,#c060ff 30%,#ff3082 60%,transparent);pointer-events:none;}
+#dp-dict::after{content:'';position:absolute;right:-9px;top:50%;transform:translateY(-50%);
+  border-left:9px solid rgba(180,80,255,0.42);border-top:8px solid transparent;border-bottom:8px solid transparent;}
+.dp-head{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;
+  border-bottom:1px solid rgba(180,80,255,0.15);flex-shrink:0;}
+.dp-title{font-size:12px;font-weight:700;letter-spacing:4px;
+  background:linear-gradient(90deg,#c060ff,#ff3082);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.dp-count{font-size:10px;letter-spacing:1px;color:rgba(180,80,255,0.5);}
+.dp-search{margin:7px 12px;padding:6px 11px;background:rgba(180,80,255,0.06);
+  border:1px solid rgba(180,80,255,0.25);color:#d4b0ff;
+  font-family:'Orbitron','Courier New',monospace;font-size:11px;letter-spacing:1px;outline:none;flex-shrink:0;}
+.dp-search:focus{border-color:#c060ff;}
+.dp-search::placeholder{color:rgba(180,80,255,0.3);}
+.dp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));
+  gap:7px;overflow-y:auto;flex:1;padding:8px 12px 12px;}
+.dp-grid::-webkit-scrollbar{width:3px;}
+.dp-grid::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#c060ff,#ff3082);border-radius:2px;}
+/* mini popup */
+.dp-mini{width:168px;background:linear-gradient(160deg,rgba(22,5,50,0.98),rgba(13,1,28,0.99));
+  border:1px solid rgba(180,80,255,0.35);box-shadow:0 0 28px rgba(120,30,220,0.4);
+  padding:13px 15px;position:relative;}
+.dp-mini::after{content:'';position:absolute;right:-9px;top:50%;transform:translateY(-50%);
+  border-left:9px solid rgba(180,80,255,0.35);border-top:8px solid transparent;border-bottom:8px solid transparent;}
+.dp-mini-label{font-size:11px;letter-spacing:2px;color:#c060ff;margin-bottom:7px;}
+.dp-mini-val{font-size:18px;font-weight:700;color:#ffc800;text-shadow:0 0 10px rgba(255,200,0,0.5);letter-spacing:2px;}
+.dp-mini-hint{font-size:10px;letter-spacing:1px;color:rgba(180,80,255,0.4);margin-top:5px;}
+</style>
+</head>
+<body>
+<canvas id="gc"></canvas>
+<div id="SL"></div>
+
+<!-- Right Dock (title screen only) -->
+<div id="right-dock">
+  <!-- 词典 -->
+  <div class="dock-item" onmouseenter="dockDictEnter()">
+    <div class="dock-btn">📖</div>
+    <div class="dock-popup" id="dp-dict">
+      <div class="dp-head">
+        <span class="dp-title">★ STELLAR DICT</span>
+        <span class="dp-count" id="dp-count">0 / 0</span>
+      </div>
+      <input class="dp-search" id="dp-search" placeholder="搜索单词 / search..." oninput="dockFilterLib(this.value.toLowerCase())">
+      <div class="dp-grid" id="dp-grid"></div>
+    </div>
+  </div>
+  <!-- 设置 -->
+  <div class="dock-item">
+    <div class="dock-btn" onclick="showSettings('title')">⚙</div>
+    <div class="dock-popup dp-mini">
+      <div class="dp-mini-label">⚙ 系统设置</div>
+      <div class="dp-mini-hint">点击图标进入</div>
+    </div>
+  </div>
+  <!-- 最高分 -->
+  <div class="dock-item" onmouseenter="document.getElementById('dp-hiscore').textContent=highScore.toLocaleString()">
+    <div class="dock-btn">🏆</div>
+    <div class="dock-popup dp-mini">
+      <div class="dp-mini-label">🏆 最高分</div>
+      <div class="dp-mini-val" id="dp-hiscore">0</div>
+      <div class="dp-mini-hint">历史最高记录</div>
+    </div>
+  </div>
+</div>
+
+<!-- Title Screen -->
+<div id="scr-title" class="screen">
+  <div style="position:absolute;bottom:18px;right:22px;text-align:right;pointer-events:none;">
+    <div style="font-size:11px;letter-spacing:1.5px;color:rgba(192,96,255,0.7);line-height:1.7;font-family:'Orbitron','Courier New',monospace;">
+      西安市曲江第一中学 7.2 晁璟晰 制作
+    </div>
+    <div style="font-size:10px;letter-spacing:2px;color:rgba(255,200,0,0.5);font-family:'Orbitron','Courier New',monospace;">
+      v1.1.0
+    </div>
+  </div>
+  <div class="title-logo">
+    <div class="title-main">STELLAR WORDS</div>
+    <div class="title-line"></div>
+  </div>
+  <div class="title-sub">✦ 星 际 词 典 ✦</div>
+  <div class="title-hi" id="title-hi">🏆 最高分: 0</div>
+  <div class="title-btns">
+    <button class="btn" onclick="startGame()">▶ 开始游戏</button>
+    <button class="btn btn-purple" onclick="showSettings('title')">⚙ 设置</button>
+    <button class="btn btn-gold" onclick="openLib()">📖 词典</button>
+  </div>
+</div>
+
+<!-- Settings Screen -->
+<div id="scr-settings" class="screen hidden">
+  <div class="settings-box">
+    <div class="settings-title">⚙ 游戏设置</div>
+    <div class="setting-row">
+      <span class="setting-label">🔊 背景音乐</span>
+      <label class="toggle"><input type="checkbox" id="s-music" checked><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+    </div>
+    <div class="setting-row">
+      <span class="setting-label">🔉 音效</span>
+      <label class="toggle"><input type="checkbox" id="s-sfx" checked><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+    </div>
+    <div class="setting-row">
+      <span class="setting-label">🎵 音乐风格</span>
+      <div class="radio-group" id="s-track-group">
+        <button class="radio-btn active" data-val="0">星云漂流</button>
+        <button class="radio-btn" data-val="1">脉冲驱动</button>
+        <button class="radio-btn" data-val="2">星域合成</button>
+      </div>
+    </div>
+    <div class="setting-row">
+      <span class="setting-label">🚀 飞船颜色</span>
+      <div class="color-dots" id="s-color-group">
+        <div class="color-dot active" data-color="#00d9ff" style="background:#00d9ff;"></div>
+        <div class="color-dot" data-color="#00ff88" style="background:#00ff88;"></div>
+        <div class="color-dot" data-color="#a855f7" style="background:#a855f7;"></div>
+        <div class="color-dot" data-color="#ff9500" style="background:#ff9500;"></div>
+        <div class="color-dot" data-color="#ff006e" style="background:#ff006e;"></div>
+      </div>
+    </div>
+    <div class="setting-row">
+      <span class="setting-label">⚡ 难度</span>
+      <div class="radio-group" id="s-diff-group">
+        <button class="radio-btn" data-val="0">简单</button>
+        <button class="radio-btn active" data-val="1">普通</button>
+        <button class="radio-btn" data-val="2">困难</button>
+      </div>
+    </div>
+    <div class="setting-row">
+      <span class="setting-label">🎯 自动瞄准</span>
+      <label class="toggle"><input type="checkbox" id="s-aim" checked><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+    </div>
+    <div class="setting-row">
+      <span class="setting-label">🔊 音乐音量</span>
+      <div style="display:flex;align-items:center;gap:10px;"><input type="range" id="s-mvol" min="0" max="100" value="60"><span id="s-mvol-val" style="font-size:12px;color:#00d9ff;min-width:30px;">60</span></div>
+    </div>
+    <div class="setting-row">
+      <span class="setting-label">🔉 音效音量</span>
+      <div style="display:flex;align-items:center;gap:10px;"><input type="range" id="s-svol" min="0" max="100" value="80"><span id="s-svol-val" style="font-size:12px;color:#00d9ff;min-width:30px;">80</span></div>
+    </div>
+    <div class="settings-btns">
+      <button class="btn btn-green" onclick="saveSettings()">保存</button>
+      <button class="btn" onclick="closeSettings()">返回</button>
+    </div>
+  </div>
+</div>
+
+<!-- HUD -->
+<div id="hud" class="hidden">
+  <div id="hud-bar">
+    <div id="hud-left">
+      <div class="hud-item"><div class="hud-label">SCORE</div><div class="hud-val" id="hud-score">0</div></div>
+      <div class="hud-item"><div class="hud-label">WAVE</div><div class="hud-val" id="hud-wave">1</div></div>
+      <div class="hud-item"><div class="hud-label">COMBO</div><div class="hud-val" id="hud-combo">x1</div></div>
+    </div>
+    <div id="hud-center">
+      <div class="hud-item"><div class="hud-label">SHIELDS</div><div class="shields" id="hud-shields"></div></div>
+    </div>
+    <div id="hud-right">
+      <div class="hud-item"><div class="hud-label">WORDS</div><div class="hud-val" id="hud-words">0/100</div></div>
+      <button class="hud-btn" onclick="openLib()">词典[L]</button>
+      <button class="hud-btn" onclick="pauseGame()">暂停[P]</button>
+    </div>
+  </div>
+  <div id="powerup-bar"></div>
+</div>
+
+<!-- Library Overlay -->
+<div id="lib-overlay" class="hidden">
+  <div class="lib-header">
+    <div class="lib-title">★ 星际词典</div>
+    <div class="lib-count" id="lib-count">已收集: 0 / 100</div>
+    <input type="text" id="lib-search" placeholder="搜索单词..." oninput="filterLib()">
+    <button class="btn" onclick="closeLib()" style="padding:8px 20px;font-size:13px;">关闭 [ESC]</button>
+  </div>
+  <div id="lib-grid"></div>
+</div>
+
+<!-- Wave Banner -->
+<div id="wave-banner">
+  <div class="wave-banner-num" id="wave-banner-num">WAVE 1</div>
+  <div class="wave-banner-sub" id="wave-banner-sub">准备好了吗？</div>
+</div>
+
+<!-- Pause Screen -->
+<div id="scr-pause" class="screen hidden">
+  <div class="pause-title glow">⏸ 暂停</div>
+  <div class="pause-btns">
+    <button class="btn btn-green" onclick="resumeGame()">继续游戏</button>
+    <button class="btn btn-purple" onclick="showSettings('pause')">设置</button>
+    <button class="btn btn-gold" onclick="openLib()">词典</button>
+    <button class="btn btn-red" onclick="goToTitle()">主菜单</button>
+  </div>
+</div>
+
+<!-- Game Over Screen -->
+<div id="scr-gameover" class="screen hidden">
+  <div class="go-title">GAME OVER</div>
+  <div id="hi-badge" class="hidden">★ 新纪录！ ★</div>
+  <div class="go-stats">
+    <div class="go-stat"><div class="go-stat-label">最终得分</div><div class="go-stat-val" id="go-score">0</div></div>
+    <div class="go-stat"><div class="go-stat-label">最高分</div><div class="go-stat-val gold" id="go-hi">0</div></div>
+    <div class="go-stat"><div class="go-stat-label">收集词汇</div><div class="go-stat-val" id="go-words">0</div></div>
+    <div class="go-stat"><div class="go-stat-label">到达波次</div><div class="go-stat-val" id="go-wave">1</div></div>
+  </div>
+  <div class="go-btns">
+    <button class="btn btn-green" onclick="startGame()">再来一局</button>
+    <button class="btn btn-gold" onclick="openLib()">查看词典</button>
+    <button class="btn" onclick="goToTitle()">主菜单</button>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+// ── WORD DATABASE ──────────────────────────────────────────────────────────────
+const WORD_DB = [
+  {en:'hello',cn:'你好',ph:'/həˈloʊ/'},
+  {en:'morning',cn:'早晨',ph:'/ˈmɔːrnɪŋ/'},
+  {en:'afternoon',cn:'下午',ph:'/ˌæftərˈnuːn/'},
+  {en:'evening',cn:'傍晚;晚上',ph:'/ˈiːvnɪŋ/'},
+  {en:'family',cn:'家庭',ph:'/ˈfæməli/'},
+  {en:'mother',cn:'母亲',ph:'/ˈmʌðər/'},
+  {en:'father',cn:'父亲',ph:'/ˈfɑːðər/'},
+  {en:'brother',cn:'兄弟',ph:'/ˈbrʌðər/'},
+  {en:'sister',cn:'姐妹',ph:'/ˈsɪstər/'},
+  {en:'friend',cn:'朋友',ph:'/frend/'},
+  {en:'teacher',cn:'教师',ph:'/ˈtiːtʃər/'},
+  {en:'student',cn:'学生',ph:'/ˈstjuːdənt/'},
+  {en:'school',cn:'学校',ph:'/skuːl/'},
+  {en:'pencil',cn:'铅笔',ph:'/ˈpensəl/'},
+  {en:'eraser',cn:'橡皮擦',ph:'/ɪˈreɪsər/'},
+  {en:'backpack',cn:'背包',ph:'/ˈbækpæk/'},
+  {en:'notebook',cn:'笔记本',ph:'/ˈnəʊtbʊk/'},
+  {en:'computer',cn:'计算机',ph:'/kəmˈpjuːtər/'},
+  {en:'apple',cn:'苹果',ph:'/ˈæpəl/'},
+  {en:'banana',cn:'香蕉',ph:'/bəˈnɑːnə/'},
+  {en:'orange',cn:'橙子',ph:'/ˈɒrɪndʒ/'},
+  {en:'hamburger',cn:'汉堡包',ph:'/ˈhæmbɜːɡər/'},
+  {en:'breakfast',cn:'早餐',ph:'/ˈbrekfəst/'},
+  {en:'lunch',cn:'午餐',ph:'/lʌntʃ/'},
+  {en:'dinner',cn:'晚餐',ph:'/ˈdɪnər/'},
+  {en:'soccer',cn:'足球',ph:'/ˈsɒkər/'},
+  {en:'basketball',cn:'篮球',ph:'/ˈbɑːskɪtbɔːl/'},
+  {en:'volleyball',cn:'排球',ph:'/ˈvɒlibɔːl/'},
+  {en:'tennis',cn:'网球',ph:'/ˈtenɪs/'},
+  {en:'swimming',cn:'游泳',ph:'/ˈswɪmɪŋ/'},
+  {en:'science',cn:'科学',ph:'/ˈsaɪəns/'},
+  {en:'history',cn:'历史',ph:'/ˈhɪstri/'},
+  {en:'music',cn:'音乐',ph:'/ˈmjuːzɪk/'},
+  {en:'Monday',cn:'星期一',ph:'/ˈmʌndeɪ/'},
+  {en:'Tuesday',cn:'星期二',ph:'/ˈtjuːzdeɪ/'},
+  {en:'Wednesday',cn:'星期三',ph:'/ˈwenzdeɪ/'},
+  {en:'Thursday',cn:'星期四',ph:'/ˈθɜːzdeɪ/'},
+  {en:'Friday',cn:'星期五',ph:'/ˈfraɪdeɪ/'},
+  {en:'bedroom',cn:'卧室',ph:'/ˈbedrʊm/'},
+  {en:'kitchen',cn:'厨房',ph:'/ˈkɪtʃɪn/'},
+  {en:'bathroom',cn:'浴室',ph:'/ˈbɑːθrʊm/'},
+  {en:'interesting',cn:'有趣的',ph:'/ˈɪntrəstɪŋ/'},
+  {en:'boring',cn:'无聊的',ph:'/ˈbɔːrɪŋ/'},
+  {en:'difficult',cn:'困难的',ph:'/ˈdɪfɪkəlt/'},
+  {en:'relaxing',cn:'令人放松的',ph:'/rɪˈlæksɪŋ/'},
+  {en:'guitar',cn:'吉他',ph:'/ɡɪˈtɑːr/'},
+  {en:'piano',cn:'钢琴',ph:'/piˈænəʊ/'},
+  {en:'trumpet',cn:'小号',ph:'/ˈtrʌmpɪt/'},
+  {en:'violin',cn:'小提琴',ph:'/ˌvaɪəˈlɪn/'},
+  {en:'library',cn:'图书馆',ph:'/ˈlaɪbrəri/'},
+  {en:'restaurant',cn:'餐馆',ph:'/ˈrestrɒnt/'},
+  {en:'hospital',cn:'医院',ph:'/ˈhɒspɪtl/'},
+  {en:'supermarket',cn:'超市',ph:'/ˈsuːpəmɑːkɪt/'},
+  {en:'elephant',cn:'大象',ph:'/ˈelɪfənt/'},
+  {en:'tiger',cn:'老虎',ph:'/ˈtaɪɡər/'},
+  {en:'panda',cn:'熊猫',ph:'/ˈpændə/'},
+  {en:'koala',cn:'考拉',ph:'/kəʊˈɑːlə/'},
+  {en:'giraffe',cn:'长颈鹿',ph:'/dʒɪˈrɑːf/'},
+  {en:'dolphin',cn:'海豚',ph:'/ˈdɒlfɪn/'},
+  {en:'penguin',cn:'企鹅',ph:'/ˈpeŋɡwɪn/'},
+  {en:'healthy',cn:'健康的',ph:'/ˈhelθi/'},
+  {en:'exercise',cn:'锻炼',ph:'/ˈeksəsaɪz/'},
+  {en:'vegetable',cn:'蔬菜',ph:'/ˈvedʒtəbl/'},
+  {en:'weather',cn:'天气',ph:'/ˈweðər/'},
+  {en:'sunny',cn:'晴朗的',ph:'/ˈsʌni/'},
+  {en:'cloudy',cn:'多云的',ph:'/ˈklaʊdi/'},
+  {en:'rainy',cn:'下雨的',ph:'/ˈreɪni/'},
+  {en:'snowy',cn:'下雪的',ph:'/ˈsnəʊi/'},
+  {en:'windy',cn:'刮风的',ph:'/ˈwɪndi/'},
+  {en:'spring',cn:'春天',ph:'/sprɪŋ/'},
+  {en:'summer',cn:'夏天',ph:'/ˈsʌmər/'},
+  {en:'autumn',cn:'秋天',ph:'/ˈɔːtəm/'},
+  {en:'winter',cn:'冬天',ph:'/ˈwɪntər/'},
+  {en:'vacation',cn:'假期',ph:'/veɪˈkeɪʃn/'},
+  {en:'doctor',cn:'医生',ph:'/ˈdɒktər/'},
+  {en:'farmer',cn:'农民',ph:'/ˈfɑːmər/'},
+  {en:'waiter',cn:'服务员',ph:'/ˈweɪtər/'},
+  {en:'always',cn:'总是',ph:'/ˈɔːlweɪz/'},
+  {en:'usually',cn:'通常',ph:'/ˈjuːʒuəli/'},
+  {en:'often',cn:'经常',ph:'/ˈɒfən/'},
+  {en:'sometimes',cn:'有时',ph:'/ˈsʌmtaɪmz/'},
+  {en:'never',cn:'从不',ph:'/ˈnevər/'},
+  {en:'festival',cn:'节日',ph:'/ˈfestɪvl/'},
+  {en:'birthday',cn:'生日',ph:'/ˈbɜːθdeɪ/'},
+  {en:'present',cn:'礼物;现在',ph:'/ˈpreznt/'},
+  {en:'surprise',cn:'惊喜',ph:'/səˈpraɪz/'},
+  {en:'careful',cn:'小心的',ph:'/ˈkeəfl/'},
+  {en:'popular',cn:'受欢迎的',ph:'/ˈpɒpjələr/'},
+  {en:'calendar',cn:'日历',ph:'/ˈkælɪndər/'},
+  {en:'map',cn:'地图',ph:'/mæp/'},
+  {en:'ruler',cn:'尺子',ph:'/ˈruːlər/'},
+  {en:'watch',cn:'手表;观看',ph:'/wɒtʃ/'},
+  {en:'color',cn:'颜色',ph:'/ˈkʌlər/'},
+  {en:'black',cn:'黑色',ph:'/blæk/'},
+  {en:'white',cn:'白色',ph:'/waɪt/'},
+  {en:'green',cn:'绿色',ph:'/ɡriːn/'},
+  {en:'yellow',cn:'黄色',ph:'/ˈjeləʊ/'},
+  {en:'subject',cn:'学科',ph:'/ˈsʌbdʒɪkt/'},
+  {en:'club',cn:'俱乐部',ph:'/klʌb/'},
+  {en:'street',cn:'街道',ph:'/striːt/'},
+  {en:'bridge',cn:'桥',ph:'/brɪdʒ/'},
+  {en:'park',cn:'公园',ph:'/pɑːk/'},
+  {en:'center',cn:'中心',ph:'/ˈsentər/'},
+  {en:'avenue',cn:'大街',ph:'/ˈævənjuː/'},
+  // ── 外貌与身体 ──
+  {en:'tall',cn:'高的',ph:'/tɔːl/'},
+  {en:'short',cn:'矮的;短的',ph:'/ʃɔːrt/'},
+  {en:'thin',cn:'瘦的',ph:'/θɪn/'},
+  {en:'heavy',cn:'重的;胖的',ph:'/ˈhevi/'},
+  {en:'beautiful',cn:'美丽的',ph:'/ˈbjuːtɪfl/'},
+  {en:'handsome',cn:'英俊的',ph:'/ˈhænsəm/'},
+  {en:'ugly',cn:'丑的',ph:'/ˈʌɡli/'},
+  {en:'young',cn:'年轻的',ph:'/jʌŋ/'},
+  {en:'old',cn:'年老的;旧的',ph:'/əʊld/'},
+  {en:'hair',cn:'头发',ph:'/heər/'},
+  {en:'eye',cn:'眼睛',ph:'/aɪ/'},
+  {en:'nose',cn:'鼻子',ph:'/nəʊz/'},
+  {en:'mouth',cn:'嘴巴',ph:'/maʊθ/'},
+  {en:'ear',cn:'耳朵',ph:'/ɪər/'},
+  {en:'face',cn:'脸',ph:'/feɪs/'},
+  {en:'hand',cn:'手',ph:'/hænd/'},
+  {en:'foot',cn:'脚',ph:'/fʊt/'},
+  {en:'arm',cn:'手臂',ph:'/ɑːrm/'},
+  {en:'leg',cn:'腿',ph:'/leɡ/'},
+  // ── 服装 ──
+  {en:'shirt',cn:'衬衫',ph:'/ʃɜːrt/'},
+  {en:'trousers',cn:'裤子',ph:'/ˈtraʊzərz/'},
+  {en:'jacket',cn:'夹克',ph:'/ˈdʒækɪt/'},
+  {en:'dress',cn:'连衣裙',ph:'/dres/'},
+  {en:'skirt',cn:'裙子',ph:'/skɜːrt/'},
+  {en:'shoes',cn:'鞋子',ph:'/ʃuːz/'},
+  {en:'hat',cn:'帽子',ph:'/hæt/'},
+  {en:'sock',cn:'袜子',ph:'/sɒk/'},
+  {en:'coat',cn:'外套',ph:'/kəʊt/'},
+  {en:'uniform',cn:'校服;制服',ph:'/ˈjuːnɪfɔːrm/'},
+  // ── 动词 ──
+  {en:'run',cn:'跑步',ph:'/rʌn/'},
+  {en:'jump',cn:'跳跃',ph:'/dʒʌmp/'},
+  {en:'walk',cn:'步行',ph:'/wɔːk/'},
+  {en:'read',cn:'阅读',ph:'/riːd/'},
+  {en:'write',cn:'写',ph:'/raɪt/'},
+  {en:'listen',cn:'听',ph:'/ˈlɪsn/'},
+  {en:'speak',cn:'说;讲',ph:'/spiːk/'},
+  {en:'study',cn:'学习',ph:'/ˈstʌdi/'},
+  {en:'play',cn:'玩;演奏',ph:'/pleɪ/'},
+  {en:'sleep',cn:'睡觉',ph:'/sliːp/'},
+  {en:'eat',cn:'吃',ph:'/iːt/'},
+  {en:'drink',cn:'喝',ph:'/drɪŋk/'},
+  {en:'cook',cn:'烹饪',ph:'/kʊk/'},
+  {en:'clean',cn:'打扫;干净的',ph:'/kliːn/'},
+  {en:'wash',cn:'洗',ph:'/wɒʃ/'},
+  {en:'sing',cn:'唱歌',ph:'/sɪŋ/'},
+  {en:'dance',cn:'跳舞',ph:'/dɑːns/'},
+  {en:'draw',cn:'画画',ph:'/drɔː/'},
+  {en:'help',cn:'帮助',ph:'/help/'},
+  {en:'finish',cn:'完成',ph:'/ˈfɪnɪʃ/'},
+  {en:'start',cn:'开始',ph:'/stɑːrt/'},
+  {en:'visit',cn:'参观;拜访',ph:'/ˈvɪzɪt/'},
+  {en:'travel',cn:'旅行',ph:'/ˈtrævl/'},
+  {en:'buy',cn:'购买',ph:'/baɪ/'},
+  {en:'sell',cn:'出售',ph:'/sel/'},
+  // ── 场所 ──
+  {en:'airport',cn:'机场',ph:'/ˈeəpɔːrt/'},
+  {en:'station',cn:'车站',ph:'/ˈsteɪʃn/'},
+  {en:'museum',cn:'博物馆',ph:'/mjuːˈziːəm/'},
+  {en:'cinema',cn:'电影院',ph:'/ˈsɪnɪmə/'},
+  {en:'gym',cn:'体育馆',ph:'/dʒɪm/'},
+  {en:'post office',cn:'邮局',ph:'/ˈpəʊst ˌɒfɪs/'},
+  {en:'bookshop',cn:'书店',ph:'/ˈbʊkʃɒp/'},
+  {en:'playground',cn:'操场',ph:'/ˈpleɪɡraʊnd/'},
+  {en:'garden',cn:'花园',ph:'/ˈɡɑːrdn/'},
+  {en:'stadium',cn:'体育场',ph:'/ˈsteɪdiəm/'},
+  // ── 时间表达 ──
+  {en:'early',cn:'早;提前',ph:'/ˈɜːrli/'},
+  {en:'late',cn:'晚;迟的',ph:'/leɪt/'},
+  {en:'yesterday',cn:'昨天',ph:'/ˈjestərdeɪ/'},
+  {en:'today',cn:'今天',ph:'/təˈdeɪ/'},
+  {en:'tomorrow',cn:'明天',ph:'/təˈmɒrəʊ/'},
+  {en:'minute',cn:'分钟',ph:'/ˈmɪnɪt/'},
+  {en:'hour',cn:'小时',ph:'/ˈaʊər/'},
+  {en:'weekend',cn:'周末',ph:'/ˌwiːkˈend/'},
+  {en:'January',cn:'一月',ph:'/ˈdʒænjueri/'},
+  {en:'February',cn:'二月',ph:'/ˈfebrueri/'},
+  {en:'March',cn:'三月',ph:'/mɑːrtʃ/'},
+  {en:'April',cn:'四月',ph:'/ˈeɪprəl/'},
+  {en:'August',cn:'八月',ph:'/ˈɔːɡəst/'},
+  {en:'September',cn:'九月',ph:'/sepˈtembər/'},
+  {en:'October',cn:'十月',ph:'/ɒkˈtoʊbər/'},
+  {en:'November',cn:'十一月',ph:'/noʊˈvembər/'},
+  {en:'December',cn:'十二月',ph:'/dɪˈsembər/'},
+  // ── 形容词 ──
+  {en:'happy',cn:'快乐的',ph:'/ˈhæpi/'},
+  {en:'sad',cn:'伤心的',ph:'/sæd/'},
+  {en:'angry',cn:'生气的',ph:'/ˈæŋɡri/'},
+  {en:'tired',cn:'疲惫的',ph:'/ˈtaɪərd/'},
+  {en:'hungry',cn:'饥饿的',ph:'/ˈhʌŋɡri/'},
+  {en:'thirsty',cn:'口渴的',ph:'/ˈθɜːrsti/'},
+  {en:'busy',cn:'忙碌的',ph:'/ˈbɪzi/'},
+  {en:'lazy',cn:'懒惰的',ph:'/ˈleɪzi/'},
+  {en:'smart',cn:'聪明的',ph:'/smɑːrt/'},
+  {en:'funny',cn:'有趣的;好笑的',ph:'/ˈfʌni/'},
+  {en:'friendly',cn:'友好的',ph:'/ˈfrendli/'},
+  {en:'brave',cn:'勇敢的',ph:'/breɪv/'},
+  {en:'quiet',cn:'安静的',ph:'/ˈkwaɪət/'},
+  {en:'loud',cn:'吵闹的',ph:'/laʊd/'},
+  {en:'fast',cn:'快的',ph:'/fɑːst/'},
+  {en:'slow',cn:'慢的',ph:'/sləʊ/'},
+  {en:'strong',cn:'强壮的',ph:'/strɒŋ/'},
+  {en:'weak',cn:'虚弱的',ph:'/wiːk/'},
+  {en:'clean',cn:'干净的',ph:'/kliːn/'},
+  {en:'dirty',cn:'脏的',ph:'/ˈdɜːrti/'},
+  // ── 交通与出行 ──
+  {en:'bus',cn:'公共汽车',ph:'/bʌs/'},
+  {en:'train',cn:'火车',ph:'/treɪn/'},
+  {en:'subway',cn:'地铁',ph:'/ˈsʌbweɪ/'},
+  {en:'bicycle',cn:'自行车',ph:'/ˈbaɪsɪkl/'},
+  {en:'car',cn:'汽车',ph:'/kɑːr/'},
+  {en:'plane',cn:'飞机',ph:'/pleɪn/'},
+  {en:'ship',cn:'轮船',ph:'/ʃɪp/'},
+  {en:'taxi',cn:'出租车',ph:'/ˈtæksi/'},
+  // ── 食物与饮料 ──
+  {en:'rice',cn:'米饭',ph:'/raɪs/'},
+  {en:'noodle',cn:'面条',ph:'/ˈnuːdl/'},
+  {en:'bread',cn:'面包',ph:'/bred/'},
+  {en:'milk',cn:'牛奶',ph:'/mɪlk/'},
+  {en:'juice',cn:'果汁',ph:'/dʒuːs/'},
+  {en:'water',cn:'水',ph:'/ˈwɔːtər/'},
+  {en:'cake',cn:'蛋糕',ph:'/keɪk/'},
+  {en:'cookie',cn:'饼干',ph:'/ˈkʊki/'},
+  {en:'soup',cn:'汤',ph:'/suːp/'},
+  {en:'salad',cn:'沙拉',ph:'/ˈsæləd/'},
+  // ── 学习与科技 ──
+  {en:'Internet',cn:'互联网',ph:'/ˈɪntərnet/'},
+  {en:'telephone',cn:'电话',ph:'/ˈtelɪfəʊn/'},
+  {en:'message',cn:'信息;短信',ph:'/ˈmesɪdʒ/'},
+  {en:'photo',cn:'照片',ph:'/ˈfəʊtəʊ/'},
+  {en:'dictionary',cn:'字典',ph:'/ˈdɪkʃənri/'},
+  {en:'question',cn:'问题',ph:'/ˈkwestʃən/'},
+  {en:'answer',cn:'回答',ph:'/ˈɑːnsər/'},
+  {en:'exam',cn:'考试',ph:'/ɪɡˈzæm/'},
+  {en:'homework',cn:'家庭作业',ph:'/ˈhəʊmwɜːrk/'},
+  {en:'lesson',cn:'课;功课',ph:'/ˈlesn/'},
+];
+
+// ── CANVAS ────────────────────────────────────────────────────────────────────
+const canvas = document.getElementById('gc');
+const ctx = canvas.getContext('2d');
+let W, H, stars = [];
+function resizeCanvas() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+  initStars();
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+// ── CONFIG & PERSISTENCE ──────────────────────────────────────────────────────
+let cfg = { music:true, sfx:true, track:0, shipColor:'#00d9ff', difficulty:1, autoAim:true, musicVol:60, sfxVol:80 };
+let collected = new Set();
+let highScore = 0;
+
+function loadConfig() {
+  try { const s = localStorage.getItem('sw_cfg'); if(s) cfg = {...cfg,...JSON.parse(s)}; } catch(e){}
+  applyConfigToUI();
+}
+function applyConfigToUI() {
+  document.getElementById('s-music').checked = cfg.music;
+  document.getElementById('s-sfx').checked = cfg.sfx;
+  document.getElementById('s-aim').checked = cfg.autoAim;
+  document.getElementById('s-mvol').value = cfg.musicVol;
+  document.getElementById('s-svol').value = cfg.sfxVol;
+  document.getElementById('s-mvol-val').textContent = cfg.musicVol;
+  document.getElementById('s-svol-val').textContent = cfg.sfxVol;
+  document.querySelectorAll('#s-track-group .radio-btn').forEach(b => b.classList.toggle('active', +b.dataset.val === cfg.track));
+  document.querySelectorAll('#s-diff-group .radio-btn').forEach(b => b.classList.toggle('active', +b.dataset.val === cfg.difficulty));
+  document.querySelectorAll('#s-color-group .color-dot').forEach(d => d.classList.toggle('active', d.dataset.color === cfg.shipColor));
+}
+function saveSettings() {
+  cfg.music = document.getElementById('s-music').checked;
+  cfg.sfx   = document.getElementById('s-sfx').checked;
+  cfg.autoAim = document.getElementById('s-aim').checked;
+  cfg.musicVol = +document.getElementById('s-mvol').value;
+  cfg.sfxVol   = +document.getElementById('s-svol').value;
+  const tb = document.querySelector('#s-track-group .radio-btn.active'); if(tb) cfg.track = +tb.dataset.val;
+  const db = document.querySelector('#s-diff-group .radio-btn.active'); if(db) cfg.difficulty = +db.dataset.val;
+  const cb = document.querySelector('#s-color-group .color-dot.active'); if(cb) cfg.shipColor = cb.dataset.color;
+  localStorage.setItem('sw_cfg', JSON.stringify(cfg));
+  if(Aud.ctx) {
+    Aud.musicGain.gain.value = cfg.music ? cfg.musicVol/100*0.5 : 0;
+    Aud.sfxGain.gain.value   = cfg.sfx   ? cfg.sfxVol/100      : 0;
+  }
+  if(cfg.music && gameState==='play') { Aud.stopMusic(); Aud.startMusic(); }
+  else if(!cfg.music) Aud.stopMusic();
+  closeSettings();
+}
+function loadPersist() {
+  try {
+    const cw = localStorage.getItem('sw_words'); if(cw) collected = new Set(JSON.parse(cw));
+    highScore = parseInt(localStorage.getItem('sw_hi')||'0');
+  } catch(e){}
+  document.getElementById('title-hi').textContent = '最高分: ' + highScore;
+}
+function savePersist() {
+  localStorage.setItem('sw_words', JSON.stringify([...collected]));
+  localStorage.setItem('sw_hi', highScore.toString());
+}
+
+// Settings widget wiring
+document.querySelectorAll('#s-track-group .radio-btn').forEach(b => b.addEventListener('click',()=>{
+  document.querySelectorAll('#s-track-group .radio-btn').forEach(x=>x.classList.remove('active')); b.classList.add('active');
+}));
+document.querySelectorAll('#s-diff-group .radio-btn').forEach(b => b.addEventListener('click',()=>{
+  document.querySelectorAll('#s-diff-group .radio-btn').forEach(x=>x.classList.remove('active')); b.classList.add('active');
+}));
+document.querySelectorAll('#s-color-group .color-dot').forEach(d => d.addEventListener('click',()=>{
+  document.querySelectorAll('#s-color-group .color-dot').forEach(x=>x.classList.remove('active')); d.classList.add('active');
+}));
+document.getElementById('s-mvol').addEventListener('input', e => document.getElementById('s-mvol-val').textContent = e.target.value);
+document.getElementById('s-svol').addEventListener('input', e => document.getElementById('s-svol-val').textContent = e.target.value);
+
+// ── AUDIO ENGINE ─────────────────────────────────────────────────────────────
+const Aud = {
+  ctx: null, musicGain: null, sfxGain: null,
+  schedID: null, nextBeat: 0, beatNum: 0,
+
+  init() {
+    try {
+      if(this.ctx) { if(this.ctx.state==='suspended') this.ctx.resume(); return; }
+      this.ctx = new (window.AudioContext||window.webkitAudioContext)();
+      this.musicGain = this.ctx.createGain();
+      this.musicGain.gain.value = cfg.music ? cfg.musicVol/100*0.5 : 0;
+      this.musicGain.connect(this.ctx.destination);
+      this.sfxGain = this.ctx.createGain();
+      this.sfxGain.gain.value = cfg.sfx ? cfg.sfxVol/100 : 0;
+      this.sfxGain.connect(this.ctx.destination);
+    } catch(e) { console.warn('Audio unavailable:', e); }
+  },
+
+  note(freq, start, dur, type, vol, dest) {
+    if(!this.ctx || !cfg.music) return;
+    try {
+      const o = this.ctx.createOscillator();
+      const g = this.ctx.createGain();
+      o.connect(g); g.connect(dest||this.musicGain);
+      o.type = type||'sine';
+      o.frequency.setValueAtTime(freq, start);
+      g.gain.setValueAtTime(0.0001, start);
+      g.gain.linearRampToValueAtTime(vol||0.07, start+0.04);
+      g.gain.setValueAtTime((vol||0.07)*0.75, start+dur*0.65);
+      g.gain.linearRampToValueAtTime(0.0001, start+dur);
+      o.start(start); o.stop(start+dur+0.05);
+    } catch(e){}
+  },
+
+  startMusic() {
+    this.stopMusic();
+    if(!this.ctx || !cfg.music) return;
+    this.beatNum = 0;
+    this.nextBeat = this.ctx.currentTime + 0.05;
+    this.schedID = setInterval(()=>this.scheduler(), 50);
+  },
+  stopMusic() {
+    if(this.schedID) { clearInterval(this.schedID); this.schedID=null; }
+  },
+
+  scheduler() {
+    if(!this.ctx) return;
+    const AHEAD = 0.4;
+    while(this.nextBeat < this.ctx.currentTime + AHEAD) {
+      const t = this.nextBeat, b = this.beatNum;
+      if(cfg.track===0) this.ambientBeat(b,t);
+      else if(cfg.track===1) this.actionBeat(b,t);
+      else this.synthBeat(b,t);
+      this.beatNum++;
+    }
+  },
+
+  // ── Percussion helpers ──
+  kick(t, vol) {
+    if(!this.ctx||!cfg.music) return;
+    try {
+      const o=this.ctx.createOscillator(), g=this.ctx.createGain();
+      o.connect(g); g.connect(this.musicGain); o.type='sine';
+      o.frequency.setValueAtTime(190,t); o.frequency.exponentialRampToValueAtTime(42,t+0.09);
+      g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(0.0001,t+0.2);
+      o.start(t); o.stop(t+0.22);
+    } catch(e){}
+  },
+  snare(t, vol) {
+    if(!this.ctx||!cfg.music) return;
+    try {
+      const sz=Math.floor(this.ctx.sampleRate*0.18);
+      const buf=this.ctx.createBuffer(1,sz,this.ctx.sampleRate);
+      const d=buf.getChannelData(0);
+      for(let i=0;i<sz;i++) d[i]=(Math.random()*2-1)*(1-i/sz)*(0.5+0.5*Math.sin(i*Math.PI/sz));
+      const src=this.ctx.createBufferSource(); src.buffer=buf;
+      const f=this.ctx.createBiquadFilter(); f.type='bandpass'; f.frequency.value=2400; f.Q.value=0.8;
+      const g=this.ctx.createGain();
+      src.connect(f); f.connect(g); g.connect(this.musicGain);
+      g.gain.setValueAtTime(vol*0.75,t); g.gain.exponentialRampToValueAtTime(0.0001,t+0.18);
+      src.start(t); src.stop(t+0.2);
+    } catch(e){}
+  },
+  hihat(t, vol) {
+    if(!this.ctx||!cfg.music) return;
+    try {
+      const sz=Math.floor(this.ctx.sampleRate*0.035);
+      const buf=this.ctx.createBuffer(1,sz,this.ctx.sampleRate);
+      const d=buf.getChannelData(0);
+      for(let i=0;i<sz;i++) d[i]=(Math.random()*2-1)*(1-i/sz);
+      const src=this.ctx.createBufferSource(); src.buffer=buf;
+      const f=this.ctx.createBiquadFilter(); f.type='highpass'; f.frequency.value=9000;
+      const g=this.ctx.createGain();
+      src.connect(f); f.connect(g); g.connect(this.musicGain);
+      g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(0.0001,t+0.035);
+      src.start(t); src.stop(t+0.04);
+    } catch(e){}
+  },
+
+  // Track 0 — "星云冲刺" — Driving Electronic, 128bpm, E minor
+  ambientBeat(b, t) {
+    const spb=60/128/2; // 8th notes
+    this.nextBeat+=spb;
+    const s=b%16;
+    // Kick: 0,8 | Snare: 4,12 | Hi-hat every step
+    if(s===0||s===8) this.kick(t,0.55);
+    if(s===4||s===12) this.snare(t,0.45);
+    this.hihat(t, s%2===0 ? 0.14 : 0.07);
+    // Bass E minor
+    const bass=[82.41,0,82.41,0, 73.42,0,82.41,0, 87.31,0,82.41,0, 73.42,0,87.31,82.41];
+    if(bass[s]) this.note(bass[s],t,spb*1.7,'sawtooth',0.13);
+    // Lead arp E minor pentatonic
+    const arp=[164.81,196,220,261.63,293.66,329.63,392,440,523.25,440,392,329.63,293.66,261.63,220,196];
+    this.note(arp[s],t,spb*0.75,'sawtooth',0.065);
+    this.note(arp[s]*1.007,t,spb*0.7,'sawtooth',0.03);
+    // Chord stab on beats
+    if(s===0||s===8) [arp[s],arp[s]*1.2,arp[s]*1.5].forEach(f=>this.note(f,t,spb*0.35,'square',0.038));
+  },
+
+  // Track 1 — "脉冲战场" — Hard Battle, 160bpm, D minor
+  actionBeat(b, t) {
+    const spb=60/160/2; // 8th notes at 160bpm
+    this.nextBeat+=spb;
+    const s=b%16;
+    // Dense kick
+    if(s===0||s===3||s===8||s===11) this.kick(t,0.6);
+    if(s===4||s===12) this.snare(t,0.5);
+    if(s===2||s===6||s===10||s===14) this.hihat(t,0.12);
+    // Aggressive bass D minor
+    const bass=[73.42,0,73.42,73.42, 87.31,0,73.42,0, 73.42,0,82.41,0, 98,0,87.31,0];
+    if(bass[s]) this.note(bass[s],t,spb*1.4,'sawtooth',0.15);
+    // Fast arp with slight detune for aggression
+    const arp=[293.66,349.23,392,440,523.25,587.33,523.25,440,392,349.23,392,440,493.88,523.25,440,392];
+    this.note(arp[s],t,spb*0.6,'sawtooth',0.075);
+    this.note(arp[s]*1.009,t+0.01,spb*0.55,'sawtooth',0.04);
+    // Power chord on beat 1
+    if(s===0||s===8) [1,1.189,1.498].forEach(r=>this.note(arp[s]*r,t,spb*0.45,'square',0.042));
+  },
+
+  // Track 2 — "合成霓虹" — Synthwave Drive, 120bpm, F minor
+  synthBeat(b, t) {
+    const spb=60/120/2; // 8th notes at 120bpm
+    this.nextBeat+=spb;
+    const s=b%16;
+    // 4-on-the-floor kick
+    if(s===0||s===4||s===8||s===12) this.kick(t,0.52);
+    if(s===4||s===12) this.snare(t,0.42);
+    if(s%2===1) this.hihat(t,0.1);
+    // Synth bass F minor
+    const bass=[174.61,0,174.61,0, 155.56,0,174.61,0, 185,0,155.56,0, 174.61,207.65,185,0];
+    if(bass[s]) this.note(bass[s]*0.5,t,spb*1.8,'square',0.13);
+    // 80s melody lead
+    const melody=[349.23,392,415.3,392, 369.99,349.23,329.63,311.13,
+                  349.23,392,440,415.3, 349.23,329.63,311.13,293.66];
+    this.note(melody[s],t,spb*0.85,'square',0.07);
+    // Shimmer octave
+    this.note(melody[s]*2,t+0.04,spb*0.45,'sine',0.028);
+    // Chord pads on downbeats
+    if(s===0||s===8) [melody[s],melody[s]*1.189,melody[s]*1.498].forEach(f=>this.note(f,t,spb*1.6,'sine',0.032));
+  },
+
+  sfx(type) {
+    if(!this.ctx||!cfg.sfx) return;
+    const now = this.ctx.currentTime;
+    const g = this.sfxGain;
+    const vol = cfg.sfxVol/100;
+    try {
+      if(type==='laser') {
+        const o=this.ctx.createOscillator(), gn=this.ctx.createGain();
+        o.connect(gn); gn.connect(g); o.type='sine';
+        o.frequency.setValueAtTime(900,now); o.frequency.exponentialRampToValueAtTime(280,now+0.1);
+        gn.gain.setValueAtTime(0.35*vol,now); gn.gain.exponentialRampToValueAtTime(0.0001,now+0.12);
+        o.start(now); o.stop(now+0.15);
+      } else if(type==='explosion') {
+        const sz=this.ctx.sampleRate*0.4;
+        const buf=this.ctx.createBuffer(1,sz,this.ctx.sampleRate);
+        const d=buf.getChannelData(0);
+        for(let i=0;i<sz;i++) d[i]=(Math.random()*2-1)*(1-i/sz);
+        const src=this.ctx.createBufferSource(), flt=this.ctx.createBiquadFilter(), gn=this.ctx.createGain();
+        src.buffer=buf; src.connect(flt); flt.connect(gn); gn.connect(g);
+        flt.type='lowpass'; flt.frequency.value=700;
+        gn.gain.setValueAtTime(0.55*vol,now); gn.gain.exponentialRampToValueAtTime(0.0001,now+0.4);
+        src.start(now); src.stop(now+0.45);
+        const lo=this.ctx.createOscillator(), lg=this.ctx.createGain();
+        lo.connect(lg); lg.connect(g); lo.type='sine';
+        lo.frequency.setValueAtTime(80,now); lo.frequency.exponentialRampToValueAtTime(18,now+0.4);
+        lg.gain.setValueAtTime(0.4*vol,now); lg.gain.exponentialRampToValueAtTime(0.0001,now+0.4);
+        lo.start(now); lo.stop(now+0.45);
+      } else if(type==='powerup') {
+        [523.25,659.25,783.99,1046.5].forEach((f,i)=>{
+          const o=this.ctx.createOscillator(), gn=this.ctx.createGain();
+          o.connect(gn); gn.connect(g); o.type='triangle'; o.frequency.value=f;
+          const st=now+i*0.07;
+          gn.gain.setValueAtTime(0.28*vol,st); gn.gain.exponentialRampToValueAtTime(0.0001,st+0.18);
+          o.start(st); o.stop(st+0.22);
+        });
+      } else if(type==='hit') {
+        const sz2=this.ctx.sampleRate*0.2;
+        const buf2=this.ctx.createBuffer(1,sz2,this.ctx.sampleRate);
+        const d2=buf2.getChannelData(0);
+        for(let i=0;i<sz2;i++) d2[i]=(Math.random()*2-1)*(1-i/sz2)*0.7;
+        const src2=this.ctx.createBufferSource(), gn2=this.ctx.createGain();
+        src2.buffer=buf2; src2.connect(gn2); gn2.connect(g);
+        gn2.gain.value=0.3*vol; src2.start(now); src2.stop(now+0.25);
+        const o2=this.ctx.createOscillator(), g2=this.ctx.createGain();
+        o2.connect(g2); g2.connect(g); o2.type='sine'; o2.frequency.value=75;
+        g2.gain.setValueAtTime(0.35*vol,now); g2.gain.exponentialRampToValueAtTime(0.0001,now+0.3);
+        o2.start(now); o2.stop(now+0.35);
+      } else if(type==='capture') {
+        [880,1108.73,1318.51,1760].forEach((f,i)=>{
+          const o=this.ctx.createOscillator(), gn=this.ctx.createGain();
+          o.connect(gn); gn.connect(g); o.type='triangle'; o.frequency.value=f;
+          const st=now+i*0.055;
+          gn.gain.setValueAtTime(0.18*vol,st); gn.gain.exponentialRampToValueAtTime(0.0001,st+0.22);
+          o.start(st); o.stop(st+0.25);
+        });
+      } else if(type==='wave') {
+        [523.25,659.25,783.99,1046.5,1318.51].forEach((f,i)=>{
+          const o=this.ctx.createOscillator(), gn=this.ctx.createGain();
+          o.connect(gn); gn.connect(g); o.type='sine'; o.frequency.value=f;
+          const st=now+i*0.1;
+          gn.gain.setValueAtTime(0.22*vol,st); gn.gain.exponentialRampToValueAtTime(0.0001,st+0.3);
+          o.start(st); o.stop(st+0.38);
+        });
+      } else if(type==='gameover') {
+        [440,349.23,261.63,196].forEach((f,i)=>{
+          const o=this.ctx.createOscillator(), gn=this.ctx.createGain();
+          o.connect(gn); gn.connect(g); o.type='sine'; o.frequency.value=f;
+          const st=now+i*0.28;
+          gn.gain.setValueAtTime(0.28*vol,st); gn.gain.exponentialRampToValueAtTime(0.0001,st+0.5);
+          o.start(st); o.stop(st+0.6);
+        });
+      }
+    } catch(e){}
+  }
+};
+
+// ── STARS / BACKGROUND ────────────────────────────────────────────────────────
+function initStars() {
+  stars = Array.from({length:200}, ()=>({
+    x:Math.random()*W, y:Math.random()*H,
+    r:Math.random()*1.8+0.2,
+    a:Math.random(),
+    da:(Math.random()*0.006+0.002)*(Math.random()<0.5?1:-1),
+    layer:Math.floor(Math.random()*3)
+  }));
+}
+const nebulae = Array.from({length:7},()=>({
+  x:Math.random(), y:Math.random(),
+  rx:0.14+Math.random()*0.22, ry:0.09+Math.random()*0.18,
+  hue:[280,310,260,200,320,240,290][Math.floor(Math.random()*7)],
+  a:0.04+Math.random()*0.055
+}));
+
+// Background hue smoothly tracks wave progression
+// Wave 1→2=purple(285°), 3→4=cyan(195°), 5→6=amber(35°), 7+=red(10°)
+let bgHue = 285, bgHueTarget = 285;
+
+function drawBackground(dt=0.016) {
+  const wv = (gameState==='play'||gameState==='pause'||gameState==='lib') ? G.wave : 1;
+  bgHueTarget = Math.max(10, 285 - (wv - 1) * 30);
+  bgHue += (bgHueTarget - bgHue) * Math.min(1, dt * 1.8); // dt-based lerp, ~1.5s transition
+  const H2 = bgHue;
+
+  // Dynamic gradient base
+  const bgGrd = ctx.createLinearGradient(0,0,0,H);
+  bgGrd.addColorStop(0, `hsl(${H2},80%,4%)`);
+  bgGrd.addColorStop(0.5, `hsl(${H2},75%,8%)`);
+  bgGrd.addColorStop(1, `hsl(${H2},80%,3%)`);
+  ctx.fillStyle=bgGrd; ctx.fillRect(0,0,W,H);
+
+  // Radial center glow (brightens in danger waves)
+  const danger = Math.max(0, (wv-5)/6);
+  if(danger>0){
+    const cGrd=ctx.createRadialGradient(W/2,H/2,0,W/2,H/2,W*0.6);
+    cGrd.addColorStop(0,`hsla(${H2+20},90%,55%,${0.035*danger})`);
+    cGrd.addColorStop(1,'transparent');
+    ctx.fillStyle=cGrd; ctx.fillRect(0,0,W,H);
+  }
+
+  // Bottom glow stripe
+  const hGrd=ctx.createLinearGradient(0,H*0.65,0,H);
+  hGrd.addColorStop(0,'transparent');
+  hGrd.addColorStop(1,`hsla(${H2+15},85%,55%,0.06)`);
+  ctx.fillStyle=hGrd; ctx.fillRect(0,0,W,H);
+
+  // Grid — hue-tinted
+  ctx.strokeStyle=`hsla(${H2},70%,65%,0.052)`; ctx.lineWidth=1;
+  for(let x=0;x<W;x+=72){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+  for(let y=0;y<H;y+=72){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+
+  // Nebulae — shift hue with background
+  nebulae.forEach(n=>{
+    const nh = ((n.hue - 285 + H2) % 360 + 360) % 360;
+    const grd=ctx.createRadialGradient(n.x*W,n.y*H,0,n.x*W,n.y*H,n.rx*W);
+    grd.addColorStop(0,`hsla(${nh},80%,52%,${n.a})`);
+    grd.addColorStop(1,'transparent');
+    ctx.fillStyle=grd;
+    ctx.beginPath(); ctx.ellipse(n.x*W,n.y*H,n.rx*W,n.ry*H,0,0,Math.PI*2); ctx.fill();
+  });
+  // Stars
+  const px = player ? (player.x-W/2)*0.008 : 0;
+  const py = player ? (player.y-H/2)*0.008 : 0;
+  stars.forEach(s=>{
+    s.a += s.da; if(s.a<=0.08||s.a>=1) s.da*=-1;
+    s.a = Math.max(0.08,Math.min(1,s.a));
+    const ox=px*(s.layer+1), oy=py*(s.layer+1);
+    const sx=((s.x+ox)%W+W)%W, sy=((s.y+oy)%H+H)%H;
+    ctx.fillStyle=`rgba(255,255,255,${s.a})`;
+    ctx.beginPath(); ctx.arc(sx,sy,s.r,0,Math.PI*2); ctx.fill();
+  });
+}
+
+// ── GAME STATE ────────────────────────────────────────────────────────────────
+let gameState = 'title'; // title | play | pause | lib | gameover
+let prevSettingsState = 'title';
+let prevLibState = 'play';
+let lastTime = 0;
+
+let player=null, bullets=[], asteroids=[], particles=[], powerups=[];
+const G = {
+  score:0, wave:1, shields:3, combo:1, comboTimer:0,
+  invincible:0, shakeX:0, shakeY:0, shakeTimer:0,
+  waveKills:0, waveTarget:0, asteroidsNeeded:0,
+  totalKills:0,
+  spawning:false, waveComplete:false,
+  spawnTimer:0, spawnInterval:2.5,
+  stunTimer:0,  // can't shoot when >0 (electric asteroid effect)
+  effects:{} // multi, freeze, boost, rapid — timers
+};
+const DIFF=[
+  {speedMul:0.68, spawnMul:1.5, shields:4},
+  {speedMul:1.0,  spawnMul:1.0, shields:3},
+  {speedMul:1.42, spawnMul:0.68,shields:2}
+];
+
+// ── PLAYER ───────────────────────────────────────────────────────────────────
+class Player {
+  constructor() {
+    this.x=W/2; this.y=H/2; this.vx=0; this.vy=0;
+    this.size=26; this.angle=-Math.PI/2; this.thrustTimer=0; this.shootCD=0;
+  }
+  update(dt,keys) {
+    const spd=210;
+    let mv=false;
+    if(keys['ArrowLeft']||keys['a']||keys['A']){this.vx-=spd*dt;mv=true;}
+    if(keys['ArrowRight']||keys['d']||keys['D']){this.vx+=spd*dt;mv=true;}
+    if(keys['ArrowUp']||keys['w']||keys['W']){this.vy-=spd*dt;mv=true;}
+    if(keys['ArrowDown']||keys['s']||keys['S']){this.vy+=spd*dt;mv=true;}
+    this.vx*=0.88; this.vy*=0.88;
+    this.x=Math.max(this.size,Math.min(W-this.size,this.x+this.vx));
+    this.y=Math.max(this.size,Math.min(H-this.size,this.y+this.vy));
+    this.thrustTimer = mv ? this.thrustTimer+dt : 0;
+    if(this.shootCD>0) this.shootCD-=dt;
+    const tgt=getTarget();
+    if(tgt&&player){const lead=aimLead(tgt,580);this.angle=Math.atan2(lead.py-this.y,lead.px-this.x);}
+  }
+  draw() {
+    const c=cfg.shipColor;
+    ctx.save(); ctx.translate(this.x,this.y); ctx.rotate(this.angle+Math.PI/2);
+    // Thruster
+    if(this.thrustTimer>0){
+      ctx.beginPath(); ctx.ellipse(0,this.size*0.85,4+Math.random()*3,9+Math.random()*7,0,0,Math.PI*2);
+      ctx.fillStyle=`rgba(255,${100+Math.floor(Math.random()*80)},0,${0.35+Math.random()*0.35})`; ctx.fill();
+    }
+    // Wings
+    ctx.beginPath();
+    ctx.moveTo(0,-this.size);
+    ctx.lineTo(-this.size*0.75,this.size*0.75);
+    ctx.lineTo(-this.size*0.25,this.size*0.3);
+    ctx.lineTo(0,this.size*0.5);
+    ctx.lineTo(this.size*0.25,this.size*0.3);
+    ctx.lineTo(this.size*0.75,this.size*0.75);
+    ctx.closePath();
+    ctx.fillStyle=c+'28'; ctx.fill();
+    ctx.strokeStyle=c; ctx.lineWidth=2;
+    ctx.shadowColor=c; ctx.shadowBlur=12; ctx.stroke();
+    // Core
+    ctx.beginPath(); ctx.arc(0,0,3,0,Math.PI*2);
+    ctx.fillStyle=c; ctx.shadowBlur=16; ctx.fill();
+    ctx.restore();
+  }
+}
+
+// ── BULLET ───────────────────────────────────────────────────────────────────
+class Bullet {
+  constructor(x,y,vx,vy){this.x=x;this.y=y;this.vx=vx;this.vy=vy;this.life=2.8;}
+  update(dt){this.x+=this.vx*dt;this.y+=this.vy*dt;this.life-=dt;}
+  draw(){
+    const ang=Math.atan2(this.vy,this.vx);
+    ctx.save(); ctx.translate(this.x,this.y); ctx.rotate(ang);
+    const grd=ctx.createLinearGradient(-14,0,6,0);
+    grd.addColorStop(0,'transparent'); grd.addColorStop(0.6,'#00d9ff'); grd.addColorStop(1,'#ffffff');
+    ctx.fillStyle=grd; ctx.shadowColor='#00d9ff'; ctx.shadowBlur=10;
+    ctx.beginPath(); ctx.ellipse(0,0,11,2.5,0,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+  isOut(){return this.life<=0||this.x<-40||this.x>W+40||this.y<-40||this.y>H+40;}
+}
+
+// ── ASTEROID ─────────────────────────────────────────────────────────────────
+// Asteroid type data
+const AST_TYPES = {
+  normal:  {col:'#8898c0', fill:'rgba(36,42,68,0.72)',   hpMul:1,   spdMul:1,    szMul:1,   pts:100, label:''},
+  swift:   {col:'#ffe040', fill:'rgba(60,55,10,0.65)',   hpMul:0.5, spdMul:2.0,  szMul:0.6, pts:250, label:'⚡'},
+  armored: {col:'#ff8c30', fill:'rgba(60,30,8,0.80)',    hpMul:3,   spdMul:0.6,  szMul:1.3, pts:350, label:'🛡'},
+  volatile:{col:'#ff3060', fill:'rgba(60,10,18,0.72)',   hpMul:1.5, spdMul:0.9,  szMul:1.1, pts:200, label:'💥'},
+  electric:{col:'#a060ff', fill:'rgba(30,10,60,0.75)',   hpMul:1,   spdMul:0.85, szMul:1,   pts:180, label:'⚡'},
+};
+
+function pickAsteroidType(wn) {
+  const r = Math.random();
+  if(wn <= 2) return 'normal';
+  if(wn <= 3) return r<0.25?'swift':r<0.35?'armored':'normal';
+  if(wn <= 5) return r<0.25?'swift':r<0.42?'armored':r<0.52?'volatile':'normal';
+  return r<0.22?'swift':r<0.40?'armored':r<0.54?'volatile':r<0.66?'electric':'normal';
+}
+
+class Asteroid {
+  constructor(word, wn, forceType, forceSize) {
+    this.word = word;
+    this.type = forceType || pickAsteroidType(wn);
+    const td = AST_TYPES[this.type];
+    // Base sizes (bigger than before)
+    const rnd = Math.random();
+    const baseSize = wn>4 ? (rnd<0.28?65:rnd<0.62?48:32) : (rnd<0.28?58:rnd<0.62?42:30);
+    this.size = (forceSize || baseSize) * td.szMul;
+    // Shape
+    const n=8+Math.floor(Math.random()*5);
+    this.pts=[];
+    for(let i=0;i<n;i++){
+      const a=(i/n)*Math.PI*2, r=this.size*(0.62+Math.random()*0.38);
+      this.pts.push({x:Math.cos(a)*r,y:Math.sin(a)*r});
+    }
+    this.angle=Math.random()*Math.PI*2;
+    this.rot=(Math.random()-0.5)*0.02*(this.type==='swift'?2:1);
+    // Spawn
+    const edge=Math.floor(Math.random()*4);
+    if(edge===0){this.x=Math.random()*W;this.y=-this.size-12;}
+    else if(edge===1){this.x=W+this.size+12;this.y=Math.random()*H;}
+    else if(edge===2){this.x=Math.random()*W;this.y=H+this.size+12;}
+    else{this.x=-this.size-12;this.y=Math.random()*H;}
+    this.isFragment=false; // fragments don't penalize on escape
+    if(forceSize){// fragment — spawn near parent (set by caller via direct xy assignment)
+      this.x=0;this.y=0;
+    }
+    const tx=W/2+(Math.random()-0.5)*W*0.55;
+    const ty=H/2+(Math.random()-0.5)*H*0.55;
+    const dist=Math.hypot(tx-this.x,ty-this.y)||1;
+    const dm=DIFF[cfg.difficulty];
+    const baseSpd=(this.size>52?46:this.size>38?66:92)*dm.speedMul*(1+wn*0.05)*td.spdMul;
+    const spd=baseSpd/60;
+    this.vx=(tx-this.x)/dist*spd; this.vy=(ty-this.y)/dist*spd;
+    this.frozen=false;
+    this.hp=Math.max(1,Math.round((this.size>52?3:this.size>38?2:1)*td.hpMul));
+    this.maxHp=this.hp;
+    this.flash=0; this.t=0;
+    // Electric: bolt timer
+    this.boltTimer = this.type==='electric' ? 3+Math.random()*3 : Infinity;
+    this.boltWarn = 0;
+    // Volatile: pulse phase
+    this.pulseT = 0;
+  }
+  update(dt){
+    if(this.frozen)return;
+    this.angle+=this.rot; this.t+=dt;
+    this.x+=this.vx; this.y+=this.vy;
+    if(this.flash>0) this.flash-=dt;
+    // Electric bolt
+    if(this.type==='electric' && player && gameState==='play'){
+      this.boltTimer-=dt;
+      if(this.boltTimer>0 && this.boltTimer<1.2) this.boltWarn=1.2-this.boltTimer;
+      if(this.boltTimer<=0){
+        fireBolt(this); this.boltTimer=4+Math.random()*3; this.boltWarn=0;
+      }
+    }
+    if(this.type==='volatile') this.pulseT+=dt;
+  }
+  draw(isTarget){
+    ctx.save(); ctx.translate(this.x,this.y);
+    const td=AST_TYPES[this.type];
+    const fl=this.flash>0;
+    // Target lock
+    if(isTarget && cfg.autoAim){
+      const r=this.size+18, now2=performance.now()*0.0018;
+      const off=8*Math.sin(now2*2.5);
+      ctx.strokeStyle=`hsl(${bgHue},80%,70%)`; ctx.lineWidth=1.5;
+      ctx.shadowColor=`hsl(${bgHue},80%,70%)`; ctx.shadowBlur=12;
+      [[1,1],[-1,1],[-1,-1],[1,-1]].forEach(([sx,sy])=>{
+        ctx.beginPath();
+        ctx.moveTo(sx*(r+off),sy*(r+off-10)); ctx.lineTo(sx*(r+off),sy*(r+off));
+        ctx.lineTo(sx*(r+off-10),sy*(r+off)); ctx.stroke();
+      });
+    }
+    // Electric warning ring
+    if(this.boltWarn>0){
+      const a2=this.boltWarn;
+      ctx.beginPath(); ctx.arc(0,0,this.size+8+a2*10,0,Math.PI*2);
+      ctx.strokeStyle=`rgba(160,80,255,${a2*0.8})`; ctx.lineWidth=2+a2*2;
+      ctx.shadowColor='#a060ff'; ctx.shadowBlur=15; ctx.stroke();
+    }
+    // Volatile pulse aura
+    if(this.type==='volatile'){
+      const pf=0.5+0.5*Math.sin(this.pulseT*5);
+      ctx.beginPath(); ctx.arc(0,0,this.size+6+pf*8,0,Math.PI*2);
+      ctx.strokeStyle=`rgba(255,48,96,${0.25+pf*0.25})`; ctx.lineWidth=1.5; ctx.stroke();
+    }
+    // Body
+    ctx.rotate(this.angle);
+    ctx.beginPath();
+    ctx.moveTo(this.pts[0].x,this.pts[0].y);
+    for(let i=1;i<this.pts.length;i++) ctx.lineTo(this.pts[i].x,this.pts[i].y);
+    ctx.closePath();
+    ctx.fillStyle=fl?'rgba(255,80,80,0.35)':td.fill; ctx.fill();
+    ctx.strokeStyle=fl?'#ff5555':td.col;
+    ctx.lineWidth=this.type==='armored'?2.5:1.8;
+    ctx.shadowColor=fl?'#ff4444':td.col; ctx.shadowBlur=fl?16:7;
+    ctx.stroke();
+    // Word text
+    ctx.rotate(-this.angle);
+    const fs=Math.max(10,Math.min(17,this.size*0.42));
+    ctx.font=`bold ${fs}px 'Orbitron','Courier New',monospace`;
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillStyle='#fff'; ctx.shadowColor=td.col; ctx.shadowBlur=8;
+    ctx.fillText(this.word.en,0,0);
+    // Type badge
+    if(td.label){
+      ctx.font=`${Math.max(9,fs*0.7)}px monospace`;
+      ctx.fillStyle=td.col; ctx.shadowBlur=5;
+      ctx.fillText(td.label, this.size*0.55, -this.size*0.55);
+    }
+    // HP bar
+    if(this.maxHp>1){
+      const bw=this.size*1.2, bh=5, by=this.size*0.85;
+      ctx.fillStyle='rgba(0,0,0,0.4)'; ctx.fillRect(-bw/2,by,bw,bh);
+      const hf=this.hp/this.maxHp;
+      ctx.fillStyle=hf>0.5?'#00ff88':hf>0.25?'#ffbe0b':'#ff3060';
+      ctx.shadowColor=ctx.fillStyle; ctx.shadowBlur=6;
+      ctx.fillRect(-bw/2,by,bw*hf,bh);
+    }
+    ctx.restore();
+  }
+  offscreen(){return this.x<-this.size-90||this.x>W+this.size+90||this.y<-this.size-90||this.y>H+this.size+90;}
+}
+
+// Electric asteroid bolt (enemy projectile)
+let enemyBolts=[];
+class EnemyBolt {
+  constructor(x,y,vx,vy){this.x=x;this.y=y;this.vx=vx;this.vy=vy;this.life=3.5;this.t=0;}
+  update(dt){this.x+=this.vx*dt;this.y+=this.vy*dt;this.life-=dt;this.t+=dt;}
+  draw(){
+    const a=Math.min(1,this.life*0.8);
+    ctx.save(); ctx.globalAlpha=a; ctx.translate(this.x,this.y);
+    const ang=Math.atan2(this.vy,this.vx); ctx.rotate(ang);
+    const grd=ctx.createLinearGradient(-18,0,6,0);
+    grd.addColorStop(0,'transparent'); grd.addColorStop(0.6,'#a060ff'); grd.addColorStop(1,'#e0c0ff');
+    ctx.fillStyle=grd; ctx.shadowColor='#a060ff'; ctx.shadowBlur=12;
+    ctx.beginPath(); ctx.ellipse(0,0,14,3,0,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+  isOut(){return this.life<=0||this.x<-50||this.x>W+50||this.y<-50||this.y>H+50;}
+}
+function fireBolt(asteroid){
+  if(!player) return;
+  const dx=player.x-asteroid.x, dy=player.y-asteroid.y;
+  const dist=Math.hypot(dx,dy)||1;
+  const spd=160;
+  enemyBolts.push(new EnemyBolt(asteroid.x,asteroid.y,dx/dist*spd,dy/dist*spd));
+}
+
+// ── PARTICLE ─────────────────────────────────────────────────────────────────
+class Particle {
+  constructor(x,y,vx,vy,col,sz,life){
+    this.x=x;this.y=y;this.vx=vx;this.vy=vy;this.col=col;this.sz=sz;this.life=life;this.maxLife=life;
+    this.spark=Math.random()<0.55;
+  }
+  update(dt){this.x+=this.vx*dt;this.y+=this.vy*dt;this.vy+=28*dt;this.vx*=0.978;this.vy*=0.978;this.life-=dt;}
+  draw(){
+    const a=Math.max(0,this.life/this.maxLife);
+    ctx.globalAlpha=a; ctx.fillStyle=this.col; ctx.shadowColor=this.col; ctx.shadowBlur=5;
+    if(this.spark){
+      ctx.beginPath(); ctx.arc(this.x,this.y,this.sz*a,0,Math.PI*2); ctx.fill();
+    } else {
+      ctx.save(); ctx.translate(this.x,this.y); ctx.rotate(Math.atan2(this.vy,this.vx));
+      ctx.fillRect(-this.sz*1.4,-this.sz*0.28,this.sz*2.8,this.sz*0.56);
+      ctx.restore();
+    }
+    ctx.globalAlpha=1;
+  }
+}
+
+function spawnExplosion(x,y,size){
+  const cols=['#ff006e','#ffbe0b','#00d9ff','#ff8800','#ffffff','#a855f7','#00ff88'];
+  const cnt=Math.max(12,Math.floor(size*1.3));
+  for(let i=0;i<cnt;i++){
+    const a=Math.random()*Math.PI*2, spd=45+Math.random()*size*4.5;
+    particles.push(new Particle(x,y,Math.cos(a)*spd,Math.sin(a)*spd,cols[Math.floor(Math.random()*cols.length)],1.5+Math.random()*3.5,0.35+Math.random()*0.9));
+  }
+}
+
+// ── POWER-UPS ────────────────────────────────────────────────────────────────
+const PU_TYPES=['SHIELD','MULTI','FREEZE','BOOST','CLEAR','RAPID','BOMB'];
+const PU_COL={SHIELD:'#00d9ff',MULTI:'#ffbe0b',FREEZE:'#4488ff',BOOST:'#ffbe0b',CLEAR:'#a855f7',RAPID:'#ff8800',BOMB:'#ff3060'};
+const PU_SYM={SHIELD:'S',MULTI:'M',FREEZE:'F',BOOST:'B',CLEAR:'C',RAPID:'R',BOMB:'💣'};
+const PU_LBL={SHIELD:'护盾',MULTI:'三重',FREEZE:'冰冻',BOOST:'加速',CLEAR:'清场',RAPID:'速射',BOMB:'爆弹'};
+const PU_DUR={MULTI:12,FREEZE:6,BOOST:15,RAPID:10};
+
+class PowerUp {
+  constructor(x,y,type){this.x=x;this.y=y;this.type=type;this.size=15;this.life=9;this.t=0;}
+  update(dt){this.life-=dt;this.t+=dt;}
+  draw(){
+    const a=Math.min(1,this.life*0.6), bob=Math.sin(this.t*2.2)*4;
+    const c=PU_COL[this.type];
+    ctx.globalAlpha=a; ctx.save(); ctx.translate(this.x,this.y+bob);
+    const pulse=0.72+0.28*Math.sin(this.t*4.5);
+    ctx.beginPath(); ctx.arc(0,0,this.size*pulse,0,Math.PI*2);
+    ctx.fillStyle=c+'2a'; ctx.fill();
+    ctx.strokeStyle=c; ctx.lineWidth=2;
+    ctx.shadowColor=c; ctx.shadowBlur=16; ctx.stroke();
+    ctx.font=`bold 13px 'Courier New',monospace`;
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillStyle=c; ctx.shadowBlur=8;
+    ctx.fillText(PU_SYM[this.type],0,0);
+    ctx.restore(); ctx.globalAlpha=1;
+  }
+}
+
+// ── GAME LOGIC ────────────────────────────────────────────────────────────────
+function getTarget(){
+  if(!player||!asteroids.length) return null;
+  let best=null,bestD=Infinity;
+  asteroids.forEach(a=>{const d=Math.hypot(a.x-player.x,a.y-player.y);if(d<bestD){bestD=d;best=a;}});
+  return best;
+}
+
+const keys={};
+document.addEventListener('keydown',e=>{
+  keys[e.key]=true;
+  if(e.key===' '){e.preventDefault();}
+  if(gameState==='play'){
+    if(e.key==='l'||e.key==='L') openLib();
+    if(e.key==='p'||e.key==='P'||e.key==='Escape') pauseGame();
+    if(e.key===' ') fire();
+  } else if(gameState==='pause'){
+    if(e.key==='Escape'||e.key==='p'||e.key==='P') resumeGame();
+  } else if(gameState==='lib'){
+    if(e.key==='Escape'||e.key==='l'||e.key==='L') closeLib();
+  }
+});
+document.addEventListener('keyup',e=>{keys[e.key]=false;});
+
+// Predict intercept point for lead-shot aiming
+function aimLead(tgt, spd){
+  if(!player) return {px:tgt.x,py:tgt.y};
+  const dx=tgt.x-player.x, dy=tgt.y-player.y;
+  const dvx=tgt.vx*(tgt.frozen?0:1), dvy=tgt.vy*(tgt.frozen?0:1);
+  const a=dvx*dvx+dvy*dvy-spd*spd;
+  const b=2*(dx*dvx+dy*dvy);
+  const c=dx*dx+dy*dy;
+  let t=0;
+  if(Math.abs(a)<0.001){
+    t = b!==0 ? -c/b : 0;
+  } else {
+    const disc=b*b-4*a*c;
+    if(disc>=0){
+      const t1=(-b-Math.sqrt(disc))/(2*a);
+      const t2=(-b+Math.sqrt(disc))/(2*a);
+      t = (t1>0&&t1<t2||t2<=0) ? t1 : t2;
+    }
+  }
+  t=Math.max(0,Math.min(t,3));
+  return { px:tgt.x+dvx*t, py:tgt.y+dvy*t };
+}
+
+function fire(){
+  const cd=G.effects.rapid?0.09:0.22;
+  if(!player||player.shootCD>0) return;
+  player.shootCD=cd;
+  Aud.sfx('laser');
+  const spd=580;
+  const tgt=getTarget();
+  const shots=G.effects.multi?3:1;
+  for(let i=0;i<shots;i++){
+    let ang=player.angle;
+    if(tgt){
+      const lead=aimLead(tgt,spd);
+      const spread=(i-Math.floor(shots/2))*0.12;
+      ang=Math.atan2(lead.py-player.y, lead.px-player.x)+spread;
+    } else if(shots===3){
+      ang+=(i-1)*0.22;
+    }
+    bullets.push(new Bullet(player.x,player.y,Math.cos(ang)*spd,Math.sin(ang)*spd));
+  }
+}
+
+function hitAsteroid(idx){
+  const a=asteroids[idx];
+  a.hp--; a.flash=0.14;
+  if(a.hp<=0) destroyAsteroid(idx);
+}
+
+function destroyAsteroid(idx){
+  const a=asteroids[idx];
+  spawnExplosion(a.x,a.y,a.size);
+  Aud.sfx('explosion');
+  // Collect word
+  if(!collected.has(a.word.en)){
+    collected.add(a.word.en);
+    Aud.sfx('capture');
+    showFloat(a.x,a.y-32,'+'+a.word.en,'#00ff88');
+    savePersist();
+  }
+  // Combo & score
+  G.combo=Math.min(G.combo+0.6,8); G.comboTimer=2.8;
+  const base=a.size>42?150:a.size>30?100:60;
+  const pts=Math.round(base*G.combo*(G.effects.boost?2:1));
+  G.score+=pts;
+  showFloat(a.x,a.y-8,'+'+pts,'#ffbe0b');
+  updateHUD();
+  // Power-up drop
+  if(Math.random()<0.2){
+    powerups.push(new PowerUp(a.x,a.y,PU_TYPES[Math.floor(Math.random()*PU_TYPES.length)]));
+  }
+  // Volatile: split into 2 small fragments
+  if(a.type==='volatile'){
+    for(let f=0;f<2;f++){
+      const frag=new Asteroid(nextWord(),G.wave,'normal',18);
+      frag.x=a.x+(Math.random()-0.5)*30; frag.y=a.y+(Math.random()-0.5)*30;
+      const ang=Math.random()*Math.PI*2, spd=1.8+Math.random();
+      frag.vx=Math.cos(ang)*spd; frag.vy=Math.sin(ang)*spd;
+      frag.hp=1; frag.maxHp=1;
+      frag.isFragment=true; // won't penalize if escaped
+      asteroids.push(frag);
+    }
+  }
+  asteroids.splice(idx,1);
+  G.waveKills++; G.totalKills++;
+  checkWave();
+}
+
+function applyPowerup(type){
+  Aud.sfx('powerup');
+  showFloat(player.x,player.y-44,PU_LBL[type]+'!',PU_COL[type]);
+  if(type==='SHIELD'){ G.shields=Math.min(5,G.shields+1); updateHUD(); }
+  else if(type==='CLEAR'){
+    [...asteroids].forEach(a=>{
+      spawnExplosion(a.x,a.y,a.size);
+      if(!collected.has(a.word.en)){collected.add(a.word.en);Aud.sfx('capture');}
+    });
+    G.waveKills+=asteroids.length; G.totalKills+=asteroids.length; asteroids.length=0;
+    savePersist(); updateHUD(); checkWave();
+  } else if(type==='BOMB'){
+    // Shockwave: deal 2 HP to every asteroid, screen flash
+    G.shakeTimer=0.35;
+    const alive=[];
+    asteroids.forEach(a=>{
+      spawnExplosion(a.x,a.y,a.size*0.5);
+      a.hp-=2; a.flash=0.25;
+      if(a.hp<=0){
+        if(!collected.has(a.word.en)){collected.add(a.word.en);Aud.sfx('capture');}
+        G.waveKills++; G.totalKills++;
+        spawnExplosion(a.x,a.y,a.size);
+      } else alive.push(a);
+    });
+    asteroids.length=0; alive.forEach(a=>asteroids.push(a));
+    // Big flash overlay
+    flashOverlay(0.35);
+    savePersist(); updateHUD(); checkWave();
+  } else {
+    G.effects[type.toLowerCase()]=PU_DUR[type]||10;
+    if(type==='FREEZE') asteroids.forEach(a=>a.frozen=true);
+  }
+}
+
+let flashAlpha=0;
+function flashOverlay(a){flashAlpha=Math.max(flashAlpha,a);}
+
+function takeDamage(){
+  if(G.shields<=0) return;
+  G.shields--; G.invincible=1.8; G.shakeTimer=0.4;
+  Aud.sfx('hit'); updateHUD();
+  if(G.shields<=0) endGame();
+}
+
+function checkCollisions(){
+  // Bullets vs asteroids
+  for(let i=bullets.length-1;i>=0;i--){
+    const b=bullets[i];
+    let hit=false;
+    for(let j=asteroids.length-1;j>=0;j--){
+      if(Math.hypot(b.x-asteroids[j].x,b.y-asteroids[j].y)<asteroids[j].size+5){
+        bullets.splice(i,1); hitAsteroid(j); hit=true; break;
+      }
+    }
+  }
+  // Player vs asteroids
+  if(G.invincible<=0 && player){
+    for(let j=asteroids.length-1;j>=0;j--){
+      if(Math.hypot(player.x-asteroids[j].x,player.y-asteroids[j].y)<asteroids[j].size+player.size*0.65){
+        takeDamage();
+        spawnExplosion(asteroids[j].x,asteroids[j].y,asteroids[j].size*0.5);
+        asteroids.splice(j,1); G.waveKills++; checkWave(); break;
+      }
+    }
+  }
+  // Player vs powerups
+  if(player){
+    for(let i=powerups.length-1;i>=0;i--){
+      if(Math.hypot(player.x-powerups[i].x,player.y-powerups[i].y)<powerups[i].size+player.size){
+        applyPowerup(powerups[i].type); powerups.splice(i,1);
+      }
+    }
+  }
+}
+
+// ── WAVE SYSTEM ──────────────────────────────────────────────────────────────
+const usedWords=new Set();
+function nextWord(){
+  let pool=WORD_DB.filter(w=>!collected.has(w.en)&&!usedWords.has(w.en));
+  if(!pool.length) pool=WORD_DB.filter(w=>!usedWords.has(w.en));
+  if(!pool.length){usedWords.clear();pool=WORD_DB;}
+  const w=pool[Math.floor(Math.random()*pool.length)];
+  usedWords.add(w.en);
+  if(usedWords.size>WORD_DB.length*0.82) usedWords.clear();
+  return w;
+}
+
+function startWave(n){
+  G.wave=n; G.waveKills=0; G.waveTarget=8+n*3;
+  G.asteroidsNeeded=G.waveTarget; G.spawning=true; G.waveComplete=false;
+  G.spawnInterval=Math.max(0.55,2.2-n*0.12)*DIFF[cfg.difficulty].spawnMul;
+  G.spawnBatch=Math.min(1+Math.floor((n-1)/2), 4); // w1:1 w3:2 w5:3 w7:4
+  G.spawnTimer=0;
+  showWaveBanner('WAVE '+n, n===1?'准备好了吗？':'冲啊！');
+  updateHUD();
+}
+
+function checkWave(){
+  if(G.waveComplete) return;
+  if(G.waveKills>=G.waveTarget && asteroids.length===0){
+    G.waveComplete=true; G.spawning=false;
+    G.combo=1; G.comboTimer=0;
+    Aud.sfx('wave');
+    showWaveBanner('WAVE '+G.wave+' CLEAR!','下一波即将来临...');
+    setTimeout(()=>{ if(gameState==='play') startWave(G.wave+1); },2600);
+  }
+}
+
+// ── HUD ───────────────────────────────────────────────────────────────────────
+function updateHUD(){
+  document.getElementById('hud-score').textContent=G.score.toLocaleString();
+  document.getElementById('hud-wave').textContent=G.wave;
+  document.getElementById('hud-combo').textContent='x'+Math.floor(G.combo);
+  document.getElementById('hud-words').textContent=collected.size+'/'+WORD_DB.length;
+  const sh=document.getElementById('hud-shields');
+  sh.innerHTML='';
+  for(let i=0;i<5;i++){
+    const h=document.createElement('span');
+    h.className='heart'+(i<G.shields?'':' empty');
+    h.textContent='♥'; sh.appendChild(h);
+  }
+  const pb=document.getElementById('powerup-bar');
+  pb.innerHTML='';
+  Object.entries(G.effects).forEach(([k,v])=>{
+    if(v>0){
+      const pill=document.createElement('div');
+      pill.className='pu-pill';
+      const KEY=k.toUpperCase();
+      pill.style.borderColor=PU_COL[KEY]||'#00d9ff';
+      pill.style.color=PU_COL[KEY]||'#00d9ff';
+      pill.innerHTML=`${PU_LBL[KEY]||k} <strong>${v.toFixed(1)}s</strong>`;
+      pb.appendChild(pill);
+    }
+  });
+}
+
+// ── WAVE BANNER ──────────────────────────────────────────────────────────────
+let waveTO=null;
+function showWaveBanner(num,sub){
+  const b=document.getElementById('wave-banner');
+  document.getElementById('wave-banner-num').textContent=num;
+  document.getElementById('wave-banner-sub').textContent=sub;
+  b.style.opacity='1'; b.style.transition='opacity 0.5s';
+  if(waveTO) clearTimeout(waveTO);
+  waveTO=setTimeout(()=>b.style.opacity='0',2100);
+}
+
+// ── FLOAT TEXT ───────────────────────────────────────────────────────────────
+function showFloat(x,y,text,color){
+  const el=document.createElement('div');
+  el.className='float-text';
+  el.textContent=text;
+  el.style.cssText=`left:${x}px;top:${y}px;color:${color};text-shadow:0 0 10px ${color};`;
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),1600);
+}
+
+// ── SCREEN MANAGEMENT ────────────────────────────────────────────────────────
+function showScreen(id){
+  ['scr-title','scr-settings','scr-pause','scr-gameover'].forEach(s=>document.getElementById(s).classList.add('hidden'));
+  if(id) document.getElementById(id).classList.remove('hidden');
+}
+
+function showSettings(from){
+  prevSettingsState=from;
+  applyConfigToUI();
+  if(from==='pause') document.getElementById('scr-pause').classList.add('hidden');
+  else if(from==='title') document.getElementById('scr-title').classList.add('hidden');
+  document.getElementById('scr-settings').classList.remove('hidden');
+}
+
+function closeSettings(){
+  document.getElementById('scr-settings').classList.add('hidden');
+  if(prevSettingsState==='pause') document.getElementById('scr-pause').classList.remove('hidden');
+  else if(prevSettingsState==='title') document.getElementById('scr-title').classList.remove('hidden');
+}
+
+function goToTitle(){
+  gameState='title'; Aud.stopMusic();
+  showScreen('scr-title');
+  document.getElementById('hud').classList.add('hidden');
+  document.getElementById('lib-overlay').classList.add('hidden');
+  document.getElementById('title-hi').textContent='最高分: '+highScore;
+  document.getElementById('right-dock').style.display='';
+}
+
+// ── LIBRARY ──────────────────────────────────────────────────────────────────
+function openLib(){
+  if(gameState==='play'||gameState==='pause') prevLibState=gameState;
+  if(gameState==='play') gameState='lib';
+  document.getElementById('lib-overlay').classList.remove('hidden');
+  renderLib('');
+}
+function closeLib(){
+  document.getElementById('lib-overlay').classList.add('hidden');
+  if(gameState==='lib') gameState=prevLibState||'play';
+  document.getElementById('lib-search').value='';
+}
+function filterLib(){renderLib(document.getElementById('lib-search').value.toLowerCase());}
+function renderLib(q){
+  document.getElementById('lib-count').textContent='已收集: '+collected.size+' / '+WORD_DB.length;
+  const words=q?WORD_DB.filter(w=>w.en.toLowerCase().includes(q)||w.cn.includes(q)):WORD_DB;
+  document.getElementById('lib-grid').innerHTML=words.map(w=>{
+    const ok=collected.has(w.en);
+    return `<div class="word-card ${ok?'collected':'locked'}">
+      <div class="wc-en">${w.en}</div>
+      <div class="wc-ph">${w.ph}</div>
+      <div class="wc-cn">${w.cn}</div>
+      ${ok?`<button class="wc-speak" data-word="${w.en}">🔊 朗读</button>`:'<div style="font-size:10px;color:rgba(0,217,255,0.28);letter-spacing:2px;margin-top:2px;">未解锁</div>'}
+    </div>`;
+  }).join('');
+}
+function speakWord(w){
+  if(!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  // Chrome bug: must delay after cancel() or speak() silently fails
+  setTimeout(()=>{
+    const u=new SpeechSynthesisUtterance(w);
+    u.lang='en-US'; u.rate=0.85; u.pitch=1;
+    const voices=window.speechSynthesis.getVoices();
+    const en=voices.find(v=>v.lang==='en-US'&&v.localService)||voices.find(v=>v.lang.startsWith('en'));
+    if(en) u.voice=en;
+    window.speechSynthesis.speak(u);
+  },120);
+}
+
+// ── DOCK ─────────────────────────────────────────────────────────────────────
+function dockDictEnter(){
+  document.getElementById('dp-count').textContent=collected.size+' / '+WORD_DB.length;
+  dockFilterLib('');
+}
+function dockFilterLib(q){
+  document.getElementById('dp-count').textContent=collected.size+' / '+WORD_DB.length;
+  const words=q?WORD_DB.filter(w=>w.en.toLowerCase().includes(q)||w.cn.includes(q)):WORD_DB;
+  document.getElementById('dp-grid').innerHTML=words.map(w=>{
+    const ok=collected.has(w.en);
+    return `<div class="word-card ${ok?'collected':'locked'}" style="padding:10px;">
+      <div class="wc-en" style="font-size:13px;">${w.en}</div>
+      <div class="wc-ph" style="font-size:9px;">${w.ph}</div>
+      <div class="wc-cn" style="font-size:12px;margin-bottom:6px;">${w.cn}</div>
+      ${ok?`<button class="wc-speak" data-word="${w.en}">🔊</button>`:''}
+    </div>`;
+  }).join('');
+}
+
+// Event delegation for pronunciation (works reliably unlike inline onclick)
+document.addEventListener('DOMContentLoaded',()=>{
+  ['lib-grid','dp-grid'].forEach(id=>{
+    document.getElementById(id).addEventListener('click',e=>{
+      const b=e.target.closest('.wc-speak');
+      if(b&&b.dataset.word) speakWord(b.dataset.word);
+    });
+  });
+});
+
+// ── GAME FLOW ────────────────────────────────────────────────────────────────
+function startGame(){
+  try {
+  Aud.init();
+  gameState='play';
+  showScreen(null);
+  document.getElementById('hud').classList.remove('hidden');
+  document.getElementById('lib-overlay').classList.add('hidden');
+  player=new Player();
+  bullets=[]; asteroids=[]; particles=[]; powerups=[]; enemyBolts=[];
+  usedWords.clear();
+  Object.assign(G,{
+    score:0,wave:1,combo:1,comboTimer:0,
+    invincible:0,shakeX:0,shakeY:0,shakeTimer:0,
+    waveKills:0,waveTarget:0,asteroidsNeeded:0,
+    spawning:false,waveComplete:false,spawnTimer:0,spawnBatch:1,
+    effects:{},stunTimer:0,totalKills:0
+  });
+  G.shields=DIFF[cfg.difficulty].shields;
+  updateHUD();
+  document.getElementById('right-dock').style.display='none';
+  Aud.startMusic();
+  startWave(1);
+  } catch(e) { console.error('startGame error:', e); alert('游戏启动失败: '+e.message); }
+}
+
+function pauseGame(){
+  if(gameState!=='play') return;
+  gameState='pause'; Aud.stopMusic();
+  document.getElementById('scr-pause').classList.remove('hidden');
+}
+function resumeGame(){
+  if(gameState!=='pause') return;
+  gameState='play'; Aud.startMusic();
+  document.getElementById('scr-pause').classList.add('hidden');
+}
+function endGame(){
+  gameState='gameover'; Aud.stopMusic(); Aud.sfx('gameover');
+  document.getElementById('hud').classList.add('hidden');
+  const isNew=G.score>highScore;
+  if(isNew) highScore=G.score;
+  savePersist();
+  document.getElementById('go-score').textContent=G.score.toLocaleString();
+  document.getElementById('go-hi').textContent=highScore.toLocaleString();
+  document.getElementById('go-words').textContent=collected.size;
+  document.getElementById('go-wave').textContent=G.wave;
+  document.getElementById('hi-badge').classList.toggle('hidden',!isNew);
+  showScreen('scr-gameover');
+}
+
+// ── MAIN LOOP ────────────────────────────────────────────────────────────────
+function gameLoop(ts){
+  requestAnimationFrame(gameLoop);
+  const dt=Math.min((ts-lastTime)/1000,0.05);
+  lastTime=ts;
+
+  // Screenshake
+  if(G.shakeTimer>0){G.shakeTimer-=dt;G.shakeX=(Math.random()-0.5)*14;G.shakeY=(Math.random()-0.5)*14;}
+  else{G.shakeX=0;G.shakeY=0;}
+
+  ctx.save();
+  if(G.shakeX||G.shakeY) ctx.translate(G.shakeX,G.shakeY);
+  drawBackground(dt);
+
+  if(gameState==='play'||gameState==='lib'){
+    if(gameState==='play') update(dt);
+    render();
+  } else if(gameState==='pause'){
+    render();
+  }
+  ctx.restore();
+}
+
+function update(dt){
+  // Invincibility
+  if(G.invincible>0) G.invincible-=dt;
+  // Combo decay
+  if(G.comboTimer>0) G.comboTimer-=dt;
+  else if(G.combo>1){G.combo=Math.max(1,G.combo-dt*0.45); updateHUD();}
+  // Effects countdown
+  let effChange=false;
+  for(const k of Object.keys(G.effects)){
+    G.effects[k]-=dt;
+    if(G.effects[k]<=0){
+      delete G.effects[k];
+      if(k==='freeze') asteroids.forEach(a=>a.frozen=false);
+      effChange=true;
+    }
+  }
+  if(effChange) updateHUD();
+  // Stun timer (electric bolt hit)
+  if(G.stunTimer>0){ G.stunTimer-=dt; }
+  // Auto-fire while space held
+  if(keys[' '] && G.stunTimer<=0) fire();
+  // Player
+  player.update(dt,keys);
+  // Spawn
+  if(G.spawning&&G.asteroidsNeeded>0){
+    G.spawnTimer-=dt;
+    if(G.spawnTimer<=0){
+      G.spawnTimer=G.spawnInterval;
+      const batch=Math.min(G.spawnBatch||1, G.asteroidsNeeded);
+      for(let i=0;i<batch;i++){G.asteroidsNeeded--;asteroids.push(new Asteroid(nextWord(),G.wave));}
+    }
+  }
+  // Asteroids
+  for(let i=asteroids.length-1;i>=0;i--){
+    asteroids[i].update(dt);
+    if(asteroids[i].offscreen()){
+      asteroids.splice(i,1);
+    }
+  }
+  // Bullets
+  for(let i=bullets.length-1;i>=0;i--){bullets[i].update(dt);if(bullets[i].isOut()) bullets.splice(i,1);}
+  // Enemy bolts
+  for(let i=enemyBolts.length-1;i>=0;i--){
+    const b=enemyBolts[i]; b.update(dt);
+    if(b.isOut()){enemyBolts.splice(i,1);continue;}
+    if(player && G.invincible<=0 && Math.hypot(b.x-player.x,b.y-player.y)<player.size+6){
+      enemyBolts.splice(i,1);
+      G.stunTimer=1.5; G.shakeTimer=0.2;
+      showFloat(player.x,player.y-40,'⚡ 眩晕!','#a060ff');
+      Aud.sfx('hit');
+    }
+  }
+  // Flash overlay fade
+  if(flashAlpha>0) flashAlpha=Math.max(0,flashAlpha-dt*2.5);
+  // Particles
+  for(let i=particles.length-1;i>=0;i--){particles[i].update(dt);if(particles[i].life<=0) particles.splice(i,1);}
+  // Powerups
+  for(let i=powerups.length-1;i>=0;i--){powerups[i].update(dt);if(powerups[i].life<=0) powerups.splice(i,1);}
+
+  checkCollisions();
+  // Force wave complete if all spawned and all destroyed
+  if(G.spawning&&G.asteroidsNeeded<=0&&asteroids.length===0&&!G.waveComplete){
+    G.waveKills=Math.max(G.waveKills,G.waveTarget); checkWave();
+  }
+  if(G.score>highScore){highScore=G.score;savePersist();}
+}
+
+function render(){
+  if(!player) return;
+  const tgt=getTarget();
+  // Target line
+  if(tgt&&cfg.autoAim){
+    ctx.save(); ctx.setLineDash([4,10]);
+    ctx.strokeStyle='rgba(0,217,255,0.18)'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(player.x,player.y); ctx.lineTo(tgt.x,tgt.y); ctx.stroke();
+    ctx.setLineDash([]); ctx.restore();
+  }
+  particles.forEach(p=>p.draw());
+  powerups.forEach(p=>p.draw());
+  asteroids.forEach(a=>a.draw(a===tgt));
+  bullets.forEach(b=>b.draw());
+  enemyBolts.forEach(b=>b.draw());
+  if(G.invincible<=0||Math.floor(G.invincible*12)%2===0) player.draw();
+  // Flash overlay (bomb / volatile)
+  if(flashAlpha>0){
+    ctx.fillStyle=`rgba(255,80,120,${flashAlpha*0.42})`;
+    ctx.fillRect(-G.shakeX,-G.shakeY,W,H);
+  }
+}
+
+// ── BOOTSTRAP ────────────────────────────────────────────────────────────────
+loadConfig();
+loadPersist();
+lastTime=performance.now();
+requestAnimationFrame(gameLoop);
+
+// Init audio on first interaction
+function initAudio(){Aud.init();}
+document.addEventListener('click',initAudio,{once:true});
+document.addEventListener('keydown',initAudio,{once:true});
+</script>
+</body>
+</html>
